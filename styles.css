@@ -404,3 +404,33 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tonight[data-dot="on"] .tonight__dot { animation: none; }
 }
+
+/* Live layer, phase 2. Each element below reserves its space up front and only turns visible
+   once live data arrives, so nothing on the page moves when (or if) the feed answers. */
+.wheel-live { display: block; min-height: 1.6em; font-size: var(--fs-13); line-height: 1.6; color: var(--muted); text-align: center; letter-spacing: 0.04em; }
+
+.start-toggle { flex: none; display: flex; flex-direction: column; gap: var(--s1); visibility: hidden; }
+.start-toggle[data-ready] { visibility: visible; }
+.start-toggle__label { margin: 0; }
+.start-toggle__opts { display: flex; flex-direction: column; gap: var(--s1); }
+.start-toggle__opt {
+  width: 19ch; padding: 6px var(--s1); text-align: left; white-space: nowrap; cursor: pointer;
+  font-family: var(--font-mono); font-size: var(--fs-15); font-variant-numeric: tabular-nums; line-height: 1.4;
+  color: var(--muted); background: var(--bg); border: 1px solid var(--line-2); border-radius: 0;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.start-toggle__opt:hover { color: var(--text); }
+.start-toggle__opt[aria-pressed="true"] { color: var(--text); border-color: var(--gold); }
+.start-toggle__opt:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.money-live { margin-top: var(--s1); min-height: calc(2 * 1.6em); line-height: 1.6; font-variant-numeric: tabular-nums; visibility: hidden; }
+.money-live[data-ready] { visibility: visible; }
+
+@media (max-width: 720px) {
+  /* toggle moves above the slider, options side by side when they fit, stacked when they don't */
+  .s-diff .rail { flex-wrap: wrap; }
+  .start-toggle { order: -1; flex-basis: 100%; }
+  .start-toggle__opts { flex-direction: row; flex-wrap: wrap; }
+  .start-toggle__opt { width: auto; flex: 1 1 19ch; }
+  .money-live { min-height: calc(4 * 1.6em); }
+}

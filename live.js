@@ -8,7 +8,11 @@
        measurement.cumulativeWorkUnits work units counted by the wheel
        measurement.distanceMm          distance run, millimetres
        measurement.freshness           "online" | "stale"
-       measurement.observedAt          last wheel reading, ISO UTC */
+       measurement.observedAt          last wheel reading, ISO UTC
+       measurement.rpmMilli            wheel speed, revolutions per minute x 1000
+       builder.anchor.workPerThousandBlocks  current difficulty D (whitepaper launch value 10,875)
+     The same reading feeds the hero wheel, the difficulty start toggle and the money line:
+     each poll dispatches "wheelpaper:live" on document; app.js listens. */
   var API = "https://api.squeekchain.com/v1/status";
   var TIMEOUT_MS = 5000;
   var REFRESH_MS = 60000;
@@ -33,7 +37,20 @@
     var generated = Date.parse(json.generatedAt);
     var limit = intOf(m.staleAfterSeconds);
     var tooOld = isFinite(generated) && limit !== null && generated - observed > limit * 1000;
-    return { height: height, work: work, mm: mm, observedAt: observed, stale: m.freshness === "stale" || tooOld };
+    // rpm and difficulty are optional: without them the strip still works and those features stay off.
+    var rpmMilli = intOf(m.rpmMilli), difficulty = intOf(a.workPerThousandBlocks);
+    return { height: height, work: work, mm: mm, observedAt: observed, stale: m.freshness === "stale" || tooOld,
+             rpm: rpmMilli === null ? null : rpmMilli / 1000, difficulty: difficulty > 0 ? difficulty : null };
+  }
+
+  // Seconds per revolution at the hamster's pace, clamped so the drawing stays readable.
+  function wheelDuration(rpm) { return Math.min(10, Math.max(0.4, 60 / rpm)); }
+
+  // decorative: never had data, keep the CSS spin. running: real pace. sleeping: wind down and stop.
+  function wheelPlan(data) {
+    if (!data) return { mode: "decorative" };
+    if (data.stale || !(data.rpm > 0)) return { mode: "sleeping" };
+    return { mode: "running", duration: wheelDuration(data.rpm) };
   }
 
   var fmtInt = function (n) { return n.toLocaleString("en-US"); };
@@ -54,6 +71,7 @@
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = { readStatus: readStatus, view: view, fmtKm: fmtKm, utcHHMM: utcHHMM, API: API,
+                       wheelDuration: wheelDuration, wheelPlan: wheelPlan,
                        LINE_LIVE: LINE_LIVE, LINE_DOWN: LINE_DOWN, sleepingLine: sleepingLine };
   }
   if (typeof document === "undefined") return;
@@ -94,8 +112,7 @@
 
   /* ---------- the strip ---------- */
   var strip = document.getElementById("tonight");
-  if (!strip) return;
-  var el = {
+  var el = strip && {
     height: document.getElementById("tn-height"),
     work: document.getElementById("tn-work"),
     km: document.getElementById("tn-km"),
@@ -103,6 +120,16 @@
     down: document.getElementById("tn-down")
   };
   var last = null, lastAttempt = 0, timer = null, inFlight = false;
+
+  // One reading, every consumer: the strip here, the rest through the event.
+  function publish(v) {
+    if (strip) render(v);
+    var detail = { state: v.state, data: v.data, wheel: wheelPlan(v.data) };
+    var ev;
+    try { ev = new CustomEvent("wheelpaper:live", { detail: detail }); }
+    catch (e) { ev = document.createEvent("CustomEvent"); ev.initCustomEvent("wheelpaper:live", false, false, detail); }
+    document.dispatchEvent(ev);
+  }
 
   function render(v) {
     strip.setAttribute("data-state", v.state);
@@ -138,7 +165,7 @@
       inFlight = false;
       var v = view(result, last);
       if (result) last = { data: result, view: v };
-      render(v);
+      publish(v);
       schedule(REFRESH_MS);
     };
     try { fetchStatus().then(done, function () { done(null); }); } catch (e) { done(null); }

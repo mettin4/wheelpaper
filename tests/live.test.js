@@ -52,4 +52,40 @@ assert.equal(fmtKm(0), "0.00");
 assert.equal(fmtKm(1234567890), "1,234.57");
 assert.equal(utcHHMM(Date.parse("2026-10-29T23:05:59Z")), "23:05");
 
+/* ---------- phase 2: wheel, money line, start toggle ---------- */
+const { wheelDuration, wheelPlan } = require("../live.js");
+const { moneyLine, simulateNight, START_D } = require("../app.js");
+
+// rpm -> seconds per revolution, clamped to 0.4 .. 10
+const durations = [[1, 10], [60, 1], [300, 0.4], [10000, 0.4], [6, 10], [150, 0.4], [30, 2]];
+for (const [rpm, sec] of durations) assert.equal(wheelDuration(rpm), sec, `rpm ${rpm}`);
+
+// wheel modes
+{
+  const fresh = readStatus(status({ measurement: { rpmMilli: 45000 } }));
+  assert.equal(fresh.rpm, 45);
+  assert.deepEqual(wheelPlan(fresh), { mode: "running", duration: 60 / 45 });
+  assert.equal(wheelPlan(readStatus(status({ measurement: { rpmMilli: 0 } }))).mode, "sleeping");
+  assert.equal(wheelPlan(readStatus(status({ measurement: { rpmMilli: 45000, freshness: "stale" } }))).mode, "sleeping");
+  assert.equal(wheelPlan(readStatus(status())).mode, "sleeping", "rpm missing counts as not running");
+  assert.equal(wheelPlan(null).mode, "decorative");
+}
+
+// difficulty field
+assert.equal(readStatus(status({ anchor: { workPerThousandBlocks: 11246 } })).difficulty, 11246);
+assert.equal(readStatus(status()).difficulty, null, "no difficulty -> toggle stays off");
+
+// money line at X = 2,994: 2,994 x 6,900 = 20,658,600
+assert.equal(moneyLine(2994), "Sepolia has completed 2,994 blocks so far. At launch values that would be 20,658,600 SQK minted.");
+
+// toggle starts feed the sim: same work, 48 rounds, launch vs tonight
+{
+  const launch = simulateNight(2000, 48, START_D);
+  const tonight = simulateNight(2000, 48, 11246);
+  assert.equal(launch.before, 10875n); assert.equal(tonight.before, 11246n);
+  assert.notEqual(launch.after, tonight.after);
+  assert.notEqual(launch.blocks, tonight.blocks);
+  assert.deepEqual(simulateNight(2000), launch, "default start is still the launch value");
+}
+
 console.log("live.test.js: all assertions passed");

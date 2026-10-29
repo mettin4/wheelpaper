@@ -74,10 +74,18 @@
     return { level: level, l1Used: cost, burned: cost - 1 };
   }
 
+  // The Money live line: launch math (supplyAt) applied to the live Sepolia block height.
+  function moneyLine(height) {
+    var en = function (n) { return n.toLocaleString("en-US"); };
+    return "Sepolia has completed " + en(height) + " blocks so far. At launch values that would be " +
+      en(supplyAt(height).minted) + " SQK minted.";
+  }
+
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
       simulateNight: simulateNight, stepRound: stepRound, START_D: START_D, MIN_D: MIN_D, UNITS_PER_BLOCK: UNITS_PER_BLOCK,
-      supplyAt: supplyAt, levelCost: levelCost, LEVELS: LEVELS, CAP: CAP, PREMINE: PREMINE, LAST_BLOCK: LAST_BLOCK
+      supplyAt: supplyAt, levelCost: levelCost, LEVELS: LEVELS, CAP: CAP, PREMINE: PREMINE, LAST_BLOCK: LAST_BLOCK,
+      moneyLine: moneyLine
     };
   }
   if (typeof document === "undefined") return;
@@ -96,6 +104,13 @@
     text: css.getPropertyValue("--text").trim()
   };
   var SVGNS = "http://www.w3.org/2000/svg";
+
+  // Live layer (live.js polls once, dispatches "wheelpaper:live"). Every listener below is optional:
+  // with no event, or an event without data, the page behaves exactly as before.
+  function onLive(fn) { document.addEventListener("wheelpaper:live", function (e) { if (e.detail) fn(e.detail); }); }
+  // Difficulty start: whitepaper launch value unless the visitor picks tonight's live value.
+  var start = { pick: "launch", live: null };
+  function startD() { return start.pick === "tonight" && start.live ? BigInt(start.live) : START_D; }
 
   /* ---------- dot-matrix numerals, 5x7 ---------- */
   var GLYPHS = {
@@ -195,14 +210,55 @@
       dotMatrix(out, fmt(count));
       out.setAttribute("aria-label", fmt(count) + " work units");
     }
-    render();
-    // One animation iteration = one revolution; the magnet is at the sensor at every iteration boundary.
-    rot.addEventListener("animationiteration", function () {
+    function hit() {
       count += 1;
       render();
       sensor.classList.add("is-hit");
       clearTimeout(timer);
       timer = setTimeout(function () { sensor.classList.remove("is-hit"); }, 150);
+    }
+    render();
+    // One animation iteration = one revolution; the magnet is at the sensor at every iteration boundary.
+    rot.addEventListener("animationiteration", hit);
+
+    // Live: once real telemetry arrives a frame loop takes over from the CSS spin, starting from the
+    // CSS angle so nothing jumps. Speed eases toward the hamster's pace; sleeping winds down to a stop
+    // over 1 s. The counter still ticks once per revolution (magnet passing 12 o'clock), so it pauses too.
+    var line = document.getElementById("wheel-live");
+    var LINE_RUN = "Live: the wheel spins at Squeektoshi's real pace.", LINE_SLEEP = "Squeektoshi is sleeping right now.";
+    var driven = false, angle = 0, speed = 0, target = 0, stopFrom = null, stopAt = 0, raf = 0, lastT = 0;
+    function cssAngle() {
+      var m = /matrix\(([^)]+)\)/.exec(getComputedStyle(rot).transform || "");
+      if (!m) return 0;
+      var p = m[1].split(",").map(Number);
+      return (Math.atan2(p[1], p[0]) * 180 / Math.PI + 360) % 360;
+    }
+    function frame(now) {
+      var dt = Math.min(64, Math.max(0, now - lastT)) / 1000; lastT = now;
+      if (stopFrom !== null) speed = Math.max(0, stopFrom * (1 - (now - stopAt) / 1000));
+      else speed += (target - speed) * Math.min(1, dt / 0.6);
+      var before = angle;
+      angle += speed * dt;
+      if (Math.floor(angle / 360) > Math.floor(before / 360)) hit();
+      rot.style.transform = "rotate(" + (angle % 360).toFixed(2) + "deg)";
+      raf = stopFrom !== null && speed === 0 ? 0 : requestAnimationFrame(frame);
+    }
+    onLive(function (d) {
+      var plan = d.wheel;
+      if (!plan || plan.mode === "decorative" || !line) return; // no data yet: the CSS spin stays exactly as it was
+      var text = plan.mode === "running" ? LINE_RUN : LINE_SLEEP;
+      if (line.textContent !== text) line.textContent = text;
+      if (reduceMotion) return; // the wheel is already still; the line still tells the truth
+      if (!driven) {
+        driven = true;
+        angle = cssAngle();
+        speed = 180; // the CSS spin: 360 degrees per 2 s
+        rot.style.animation = "none";
+        rot.style.transform = "rotate(" + angle.toFixed(2) + "deg)";
+      }
+      if (plan.mode === "running") { target = 360 / plan.duration; stopFrom = null; }
+      else if (stopFrom === null) { stopFrom = speed; stopAt = performance.now(); }
+      if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(frame); }
     });
   }
 
@@ -369,7 +425,7 @@
 
     function update() {
       var work = Number(input.value);
-      var r = simulateNight(work);
+      var r = simulateNight(work, undefined, startD());
       last = r;
       dotMatrix(document.getElementById("work-value"), fmt(work));
       input.setAttribute("aria-valuetext", fmt(work) + " work units per round");
@@ -385,6 +441,35 @@
     if ("ResizeObserver" in window) new ResizeObserver(redraw).observe(cv);
     else window.addEventListener("resize", redraw);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+
+    // Start toggle: its space is reserved in CSS, it only becomes visible and usable once a live
+    // difficulty arrives. Until then (or if it never does) Launch and the original footnote stand.
+    var tog = document.getElementById("start-toggle"), footnote = document.getElementById("start-note");
+    if (!tog || !footnote) return;
+    var NOTE_LAUNCH = footnote.textContent;
+    var NOTE_TONIGHT = "Tonight's real Sepolia difficulty, read live from the public Squeekchain API.";
+    var opts = Array.prototype.slice.call(tog.querySelectorAll("[data-start]"));
+    var tonightBtn = tog.querySelector('[data-start="tonight"]');
+    function pick(which) {
+      start.pick = which;
+      opts.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.start === which)); });
+      footnote.textContent = which === "tonight" ? NOTE_TONIGHT : NOTE_LAUNCH;
+      update();
+    }
+    opts.forEach(function (b) { b.addEventListener("click", function () { pick(b.dataset.start); }); });
+    onLive(function (d) {
+      var D = d.data && d.data.difficulty;
+      if (!D) return;
+      var changed = start.live !== D;
+      start.live = D;
+      tonightBtn.textContent = "Tonight · " + fmt(D);
+      if (!tog.hasAttribute("data-ready")) {
+        tog.setAttribute("data-ready", "");
+        tog.removeAttribute("inert");
+        tog.removeAttribute("aria-hidden");
+      }
+      if (changed && start.pick === "tonight") update();
+    });
   }
 
   // Copy result: the current night as one shareable line, plus wherever this page is hosted.
@@ -393,7 +478,7 @@
     if (!btn) return;
     var label = btn.textContent;
     function text() {
-      var r = simulateNight(Number(input.value));
+      var r = simulateNight(Number(input.value), undefined, startD());
       return "If Squeektoshi runs " + fmt(Number(input.value)) + " work units per round for one night: " + fmt(r.blocks) +
         " blocks, difficulty " + fmt(r.before) + " -> " + fmt(r.after) + ". " + location.href;
     }
@@ -487,6 +572,16 @@
     update();
     var redraw = function () { if (last) drawSupply(cv, last); };
     if ("ResizeObserver" in window) new ResizeObserver(redraw).observe(cv); else window.addEventListener("resize", redraw);
+
+    // Live line under the source: space reserved in CSS, text appears only with a live block height.
+    var liveLine = document.getElementById("money-live");
+    if (!liveLine) return;
+    onLive(function (d) {
+      if (!d.data) return;
+      liveLine.textContent = moneyLine(d.data.height);
+      liveLine.setAttribute("data-ready", "");
+      liveLine.removeAttribute("aria-hidden");
+    });
   }
 
   /* ---------- 5. the squeeks ---------- */

@@ -56,6 +56,7 @@
           <figcaption class="counter">
             <span class="dm dm--lg" id="work-count" role="status" aria-live="off" aria-label="0 work units"></span>
             <span class="label">work units</span>
+            <span class="wheel-live" id="wheel-live" aria-live="polite"></span>
           </figcaption>
         </figure>
       </div>
@@ -129,8 +130,15 @@
               <span class="dm dm--sm" id="work-value"></span>
               <span class="label">work units per round</span>
             </output>
+            <div class="start-toggle" id="start-toggle" role="group" aria-labelledby="start-label" aria-hidden="true" inert>
+              <span class="label start-toggle__label" id="start-label">Start from</span>
+              <div class="start-toggle__opts">
+                <button class="start-toggle__opt" type="button" data-start="launch" aria-pressed="true">Launch · 10,875</button>
+                <button class="start-toggle__opt" type="button" data-start="tonight" aria-pressed="false">Tonight</button>
+              </div>
+            </div>
           </div>
-          <p class="control__note">Every night starts at difficulty 10,875, the whitepaper's launch value.</p>
+          <p class="control__note" id="start-note">Every night starts at difficulty 10,875, the whitepaper's launch value.</p>
         </div>
 
         <div class="readout">
@@ -200,6 +208,7 @@
         </div>
         <p class="note" id="cap-note" hidden>Block 273,914 mints the last 300 SQK. After that, nothing.</p>
         <p class="source source--foot">Source: the whitepaper, Rewards.</p>
+        <p class="source money-live" id="money-live" aria-hidden="true"></p>
       </div>
     </section>
 
