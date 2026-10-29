@@ -70,6 +70,22 @@
       </div>
     </section>
 
+    <!-- TONIGHT: live Sepolia values. A bonus layer; nothing below depends on it. -->
+    <aside class="tonight" id="tonight" data-state="loading" data-dot="off" aria-label="Live Sepolia test values">
+      <div class="wrap tonight__row">
+        <p class="tonight__tag">TONIGHT<span class="tonight__dot" aria-hidden="true"></span></p>
+        <div class="tonight__body">
+          <dl class="tonight__readouts">
+            <div class="tonight__item"><dt class="label">Squeek block height</dt><dd class="dm dm--sm" id="tn-height"></dd></div>
+            <div class="tonight__item"><dt class="label">Work units counted</dt><dd class="dm dm--sm" id="tn-work"></dd></div>
+            <div class="tonight__item"><dt class="label">Distance run</dt><dd class="tonight__km"><span class="dm dm--sm" id="tn-km"></span><span class="tonight__unit">km</span></dd></div>
+          </dl>
+          <p class="tonight__line" id="tn-line"></p>
+        </div>
+        <p class="tonight__down" id="tn-down"></p>
+      </div>
+    </aside>
+
     <!-- 2. ROUNDS AND BLOCKS -->
     <section class="s-clocks" id="rounds-and-blocks" aria-labelledby="t-clocks">
       <div class="wrap">
@@ -246,5 +262,6 @@
   </footer>
 
   <script src="app.js"></script>
+  <script src="live.js"></script>
 </body>
 </html>

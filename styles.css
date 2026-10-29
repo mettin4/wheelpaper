@@ -361,3 +361,46 @@ body {
   .wheel__rot, .scroll-hint, .slider.is-nudging { animation: none; }
   * { transition: none !important; }
 }
+
+/* TONIGHT strip: live Sepolia values. Fixed height in every state, so data arriving never moves the page. */
+.tonight {
+  --tn-h: 144px;
+  height: var(--tn-h); overflow: hidden;
+  background: var(--surface);
+  border-top: 1px solid var(--gold-2); border-bottom: 1px solid var(--gold-2);
+}
+.tonight__row { position: relative; height: 100%; display: flex; align-items: center; gap: var(--s5); }
+.tonight__tag {
+  flex: none; margin: 0; display: flex; align-items: center; gap: var(--s1);
+  font-family: var(--font-mono); font-size: var(--fs-13); letter-spacing: 0.2em; color: var(--gold);
+}
+.tonight__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.tonight[data-dot="on"] .tonight__dot { background: var(--green); animation: tn-pulse 2s ease-in-out infinite alternate; }
+@keyframes tn-pulse { from { opacity: 0.5; } to { opacity: 1; } }
+.tonight__body { flex: 1; min-width: 0; }
+.tonight__readouts { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s6); margin: 0; }
+.tonight__item { min-width: 0; }
+.tonight__item dt { margin-bottom: 4px; }
+.tonight__item dd { margin: 0; }
+.tonight__km { display: flex; align-items: flex-end; gap: 6px; }
+.tonight__unit { font-size: var(--fs-15); color: var(--gold); line-height: 1; }
+.tonight__line { margin: var(--s1) 0 0; font-size: var(--fs-13); color: var(--muted); line-height: 1.6; }
+.tonight__down {
+  position: absolute; inset: 0; margin: 0; padding: 0 var(--gutter);
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: var(--fs-15); color: var(--muted);
+}
+/* states: loading shows the empty frame, unreachable swaps readouts for one line */
+.tonight .tonight__down,
+.tonight[data-state="loading"] .tonight__body,
+.tonight[data-state="unreachable"] .tonight__body { visibility: hidden; }
+.tonight[data-state="unreachable"] .tonight__down { visibility: visible; }
+
+@media (max-width: 720px) {
+  .tonight { --tn-h: 344px; }
+  .tonight__row { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--s2); }
+  .tonight__readouts { flex-direction: column; gap: var(--s2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tonight[data-dot="on"] .tonight__dot { animation: none; }
+}
