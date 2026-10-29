@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>The Wheelpaper, share card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <style>
+    /* tokens copied from ../styles.css */
+    :root {
+      --bg: #0b0b0d; --grid-dot: #29292b; --gold: #ffc048; --gold-2: #f2c230; --blue: #5b7cfa;
+      --text: #f2f2f4; --muted: #82828f;
+      --font-head: "Barlow Condensed", "Arial Narrow", sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    /* the site's 18px dot grid, drawn as an SVG pattern so the card uses no gradients */
+    body {
+      width: 1600px; height: 900px; overflow: hidden; position: relative;
+      background-color: var(--bg);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Ccircle cx='9' cy='9' r='1.25' fill='%2329292b'/%3E%3C/svg%3E");
+      background-size: 18px 18px;
+      color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    }
+    .frame { position: absolute; inset: 32px; border: 2px solid var(--gold); }
+    .card { position: absolute; inset: 34px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+    .wheel-col { height: 100%; display: flex; justify-content: center; align-items: center; }
+    /* 640px wide; nudged so the drawn wheel (sensor mark to stand base), not the svg box, sits on the column's centre */
+    .wheel { width: 640px; height: auto; display: block; transform: translateY(var(--wheel-dy, 0px)); }
+    .wheel .px { fill: var(--gold); }
+    .wheel .px-dim { fill: var(--gold-2); opacity: 0.55; }
+    .wheel .px-stand { fill: var(--muted); opacity: 0.55; }
+    .wheel .magnet { fill: var(--blue); }
+    .wheel .sensor .px { fill: var(--muted); }
+    .copy { display: flex; flex-direction: column; align-items: flex-start; padding-right: 72px; }
+    .label { margin: 0 0 24px; font-size: 24px; line-height: 1.2; letter-spacing: 0.2em; color: var(--gold); }
+    .main { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 88px; line-height: 0.95; color: var(--text); }
+    .rule { width: 320px; height: 1px; background: var(--gold); margin: 40px 0 32px; border: 0; }
+    .url { margin: 0 0 16px; font-size: 28px; line-height: 1.2; color: var(--text); }
+    .credit { margin: 12px 0 0; font-size: 18px; line-height: 1.2; letter-spacing: 0.04em; color: var(--gold); }
+    .unofficial { margin: 0; font-size: 18px; line-height: 1.2; letter-spacing: 0.15em; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="frame" aria-hidden="true"></div>
+  <main class="card">
+    <div class="wheel-col">
+      <!--WHEEL-->
+    </div>
+    <div class="copy">
+      <p class="label">THE WHEELPAPER</p>
+      <h1 class="main">The Squeekchain whitepaper, made playable.</h1>
+      <hr class="rule">
+      <p class="url">wheelpaper.vercel.app</p>
+      <p class="unofficial">UNOFFICIAL. NOT AFFILIATED WITH SQUEEKCHAIN.</p>
+      <p class="credit">Built by @0xmeto_</p>
+    </div>
+  </main>
+</body>
+</html>

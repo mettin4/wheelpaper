@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>The Wheelpaper</title>
+  <meta name="description" content="The Squeekchain whitepaper, made playable. Unofficial.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <meta property="og:title" content="The Wheelpaper">
+  <meta property="og:description" content="The Squeekchain whitepaper, made playable. Unofficial.">
+  <meta property="og:image" content="https://wheelpaper.vercel.app/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://wheelpaper.vercel.app/assets/og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600&family=IBM+Plex+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="secnav" id="secnav" aria-label="Sections">
+    <a class="secnav__dot" href="#wheel" aria-label="The Wheel"></a>
+    <a class="secnav__dot" href="#rounds-and-blocks" aria-label="Rounds and blocks"></a>
+    <a class="secnav__dot" href="#difficulty" aria-label="Difficulty"></a>
+    <a class="secnav__dot" href="#money" aria-label="The Money"></a>
+    <a class="secnav__dot" href="#squeeks" aria-label="The Squeeks"></a>
+    <a class="secnav__dot" href="#trust" aria-label="The Trust"></a>
+  </nav>
+
+  <main>
+    <!-- 1. THE WHEEL -->
+    <section class="s-wheel" id="wheel" aria-labelledby="t-title">
+      <div class="wrap s-wheel__grid">
+        <div class="s-wheel__copy">
+          <h1 class="title" id="t-title">THE WHEELPAPER</h1>
+          <p class="subtitle">The Squeekchain whitepaper, made playable.</p>
+          <p class="body">A real hamster runs on a real wheel. A magnet on the wheel passes a sensor. Each accepted pass counts as one work unit. That is the entire input of this chain.</p>
+          <div class="s-wheel__notes">
+            <p class="small">Unofficial. Every number on this page comes from the whitepaper.</p>
+            <p class="source source--foot">Source: the whitepaper, Measurement.</p>
+          </div>
+        </div>
+
+        <figure class="s-wheel__fig" aria-labelledby="t-wheel">
+          <h2 class="h2 s-wheel__h2" id="t-wheel">THE WHEEL</h2>
+          <svg class="wheel" id="wheel-svg" viewBox="0 0 400 440" role="img" aria-labelledby="wheel-svg-title">
+            <title id="wheel-svg-title">A hamster wheel turning. Each time its magnet passes the sensor, one work unit is counted.</title>
+            <g id="wheel-stand"></g>
+            <g id="wheel-rot" class="wheel__rot"></g>
+            <g id="wheel-hub"></g>
+            <g id="wheel-sensor" class="wheel__sensor"></g>
+          </svg>
+          <figcaption class="counter">
+            <span class="dm dm--lg" id="work-count" role="status" aria-live="off" aria-label="0 work units"></span>
+            <span class="label">work units</span>
+          </figcaption>
+        </figure>
+      </div>
+      <div class="scroll-hint" aria-hidden="true">
+        <span class="scroll-hint__text">Scroll.</span>
+        <svg class="scroll-hint__arrow" viewBox="0 0 50 60" focusable="false">
+          <circle cx="25" cy="5" r="3.8"/><circle cx="25" cy="15" r="3.8"/><circle cx="25" cy="25" r="3.8"/>
+          <circle cx="5" cy="35" r="3.8"/><circle cx="25" cy="35" r="3.8"/><circle cx="45" cy="35" r="3.8"/>
+          <circle cx="15" cy="45" r="3.8"/><circle cx="25" cy="45" r="3.8"/><circle cx="35" cy="45" r="3.8"/>
+          <circle cx="25" cy="55" r="3.8"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 2. ROUNDS AND BLOCKS -->
+    <section class="s-clocks" id="rounds-and-blocks" aria-labelledby="t-clocks">
+      <div class="wrap">
+        <h2 class="h2" id="t-clocks">ROUNDS AND BLOCKS</h2>
+        <div class="clocks" role="img" aria-label="Three independent clocks moving at different speeds: measurement rounds, Squeek blocks and Ethereum blocks.">
+          <div class="clock">
+            <p class="label clock__label">Measurement rounds, 10 minutes</p>
+            <canvas class="clock__track" data-clock="rounds" aria-hidden="true"></canvas>
+          </div>
+          <div class="clock">
+            <p class="label clock__label">Squeek blocks, filled by work</p>
+            <canvas class="clock__track" data-clock="squeek" aria-hidden="true"></canvas>
+          </div>
+          <div class="clock">
+            <p class="label clock__label">Ethereum blocks, ~12 seconds</p>
+            <canvas class="clock__track" data-clock="eth" aria-hidden="true"></canvas>
+          </div>
+        </div>
+        <p class="body s-clocks__copy">Work is counted in 10-minute rounds. A round can hold at most 10,000 work units. Rounds fill Squeek blocks. Ethereum just records the result. Three clocks, none of them waiting for the others.</p>
+        <p class="source source--foot">Source: the whitepaper, Rounds and blocks.</p>
+      </div>
+    </section>
+
+    <!-- 3. DIFFICULTY -->
+    <section class="s-diff" id="difficulty" aria-labelledby="t-diff">
+      <div class="wrap">
+        <h2 class="h2" id="t-diff">DIFFICULTY</h2>
+
+        <div class="control">
+          <label class="control__label" for="work">How much does Squeektoshi run tonight?</label>
+          <div class="rail">
+            <div class="slider-wrap">
+              <input class="slider" id="work" type="range" min="0" max="10000" step="100" value="2000"
+                     aria-valuetext="2,000 work units per round" aria-describedby="hint-work">
+              <p class="drag-hint" id="hint-work" data-for="work">
+                <svg class="drag-hint__arrow" viewBox="0 0 70 30" aria-hidden="true" focusable="false"><circle cx="15" cy="5" r="3.6"/><circle cx="55" cy="5" r="3.6"/><circle cx="5" cy="15" r="3.6"/><circle cx="15" cy="15" r="3.6"/><circle cx="25" cy="15" r="3.6"/><circle cx="35" cy="15" r="3.6"/><circle cx="45" cy="15" r="3.6"/><circle cx="55" cy="15" r="3.6"/><circle cx="65" cy="15" r="3.6"/><circle cx="15" cy="25" r="3.6"/><circle cx="55" cy="25" r="3.6"/></svg>
+                <span>Drag the handle.</span>
+              </p>
+            </div>
+            <output class="plaque" for="work" id="work-plaque">
+              <span class="dm dm--sm" id="work-value"></span>
+              <span class="label">work units per round</span>
+            </output>
+          </div>
+          <p class="control__note">Every night starts at difficulty 10,875, the whitepaper's launch value.</p>
+        </div>
+
+        <div class="readout">
+          <div class="stat">
+            <span class="label">blocks completed</span>
+            <span class="stat__row">
+              <svg class="wheel wheel--mini" id="mini-wheel" viewBox="0 0 400 440" aria-hidden="true" focusable="false"></svg>
+              <span class="dm dm--md" id="blocks-out"></span>
+            </span>
+          </div>
+          <div class="stat">
+            <span class="label">difficulty at dawn</span>
+            <span class="num" id="d-after"></span>
+          </div>
+        </div>
+        <button class="copy-btn" id="copy-result" type="button">Copy result</button>
+
+        <figure class="chart">
+          <canvas id="chart" role="img" aria-label="Difficulty per round over 48 rounds"></canvas>
+          <p class="chart__note" id="sleep-note" hidden>Sleeping does not lower difficulty. It only stops raising it.</p>
+        </figure>
+
+        <p class="source">Launch values, from the whitepaper. The live Sepolia test uses a different schedule.</p>
+      </div>
+    </section>
+
+    <!-- 4. THE MONEY -->
+    <section class="s-money" id="money" aria-labelledby="t-money">
+      <div class="wrap">
+        <h2 class="h2" id="t-money">THE MONEY</h2>
+        <p class="body">Every completed block mints 6,900 SQK. The cap is 2,100,000,000. One tenth was pre-minted for liquidity. The rest only exists if the wheel turns.</p>
+
+        <figure class="supply">
+          <ul class="supply__legend">
+            <li><span class="key key--blue" aria-hidden="true"></span><span class="label">premine 210,000,000</span></li>
+            <li><span class="key key--gold" aria-hidden="true"></span><span class="label">minted by blocks</span></li>
+          </ul>
+          <canvas class="supply__bar" id="supply-bar" role="img" aria-label="Supply bar from 0 to 2,100,000,000 SQK. A gold tick at the end marks the cap, reached at block 273,914."></canvas>
+          <div class="supply__axis" aria-hidden="true">
+            <span class="num-sm">0</span>
+            <span class="supply__end"><span class="supply__cap" id="supply-cap">the cap</span><span class="num-sm">2,100,000,000</span></span>
+          </div>
+        </figure>
+
+        <div class="control control--money">
+          <label class="control__label control__label--small" for="blocks">Completed blocks</label>
+          <div class="rail">
+            <div class="slider-wrap">
+              <input class="slider" id="blocks" type="range" min="0" max="274000" step="1000" value="100000"
+                     aria-valuetext="100,000 completed blocks" aria-describedby="hint-blocks">
+              <p class="drag-hint" id="hint-blocks" data-for="blocks">
+                <svg class="drag-hint__arrow" viewBox="0 0 70 30" aria-hidden="true" focusable="false"><circle cx="15" cy="5" r="3.6"/><circle cx="55" cy="5" r="3.6"/><circle cx="5" cy="15" r="3.6"/><circle cx="15" cy="15" r="3.6"/><circle cx="25" cy="15" r="3.6"/><circle cx="35" cy="15" r="3.6"/><circle cx="45" cy="15" r="3.6"/><circle cx="55" cy="15" r="3.6"/><circle cx="65" cy="15" r="3.6"/><circle cx="15" cy="25" r="3.6"/><circle cx="55" cy="25" r="3.6"/></svg>
+                <span>Drag the handle.</span>
+              </p>
+            </div>
+            <output class="plaque" for="blocks">
+              <span class="dm dm--sm" id="blocks-value"></span>
+              <span class="label">blocks</span>
+            </output>
+          </div>
+        </div>
+
+        <div class="readout readout--money">
+          <div class="stat"><span class="label">SQK minted by blocks</span><span class="num" id="m-minted"></span></div>
+          <div class="stat"><span class="label">Total supply</span><span class="num" id="m-total"></span></div>
+          <div class="stat"><span class="label">Left to the cap</span><span class="num" id="m-left"></span></div>
+        </div>
+        <p class="note" id="cap-note" hidden>Block 273,914 mints the last 300 SQK. After that, nothing.</p>
+        <p class="source source--foot">Source: the whitepaper, Rewards.</p>
+      </div>
+    </section>
+
+    <!-- 5. THE SQUEEKS -->
+    <section class="s-squeeks" id="squeeks" aria-labelledby="t-squeeks">
+      <div class="wrap">
+        <h2 class="h2" id="t-squeeks">THE SQUEEKS</h2>
+        <p class="body">Minted SQK is shared by the 9,999 Squeek NFTs, by power. Two Squeeks of the same level merge into one of the next. The donor burns.</p>
+
+        <div class="levels">
+          <div class="pyramid" id="pyramid" role="group" aria-label="Squeek levels 1 to 10, pick one to see its numbers"></div>
+          <dl class="level-card" id="level-card" aria-live="polite">
+            <div class="level-card__head"><span class="label">level</span><span class="dm dm--md" id="lv-level"></span></div>
+            <div class="stat"><dt class="label">power</dt><dd class="num" id="lv-power"></dd></div>
+            <div class="stat"><dt class="label">merge cooldown</dt><dd class="num" id="lv-cooldown"></dd></div>
+            <div class="stat"><dt class="label">Level 1 Squeeks used</dt><dd class="num" id="lv-cost"></dd></div>
+            <div class="stat"><dt class="label">burned on the way</dt><dd class="num" id="lv-burn"></dd></div>
+          </dl>
+        </div>
+
+        <p class="fixed-line">One Level 10 costs 512 Level 1 Squeeks. 511 of them burn.</p>
+        <p class="fixed-line">9,999 Squeeks exist. Burned ones never come back. The collection only shrinks.</p>
+        <p class="source source--foot">Source: the whitepaper, Squeeks.</p>
+      </div>
+    </section>
+
+    <!-- 6. THE TRUST -->
+    <section class="s-trust" id="trust" aria-labelledby="t-trust">
+      <div class="wrap">
+        <h2 class="h2" id="t-trust">THE TRUST</h2>
+        <div class="trust">
+          <div class="trust__col">
+            <h3 class="h3">What is proven</h3>
+            <ul class="trust__list trust__list--yes">
+              <li>A magnet pass was accepted</li>
+              <li>Which key signed the record</li>
+              <li>The math on this page, it is the whitepaper's</li>
+            </ul>
+          </div>
+          <div class="trust__col">
+            <h3 class="h3">What is not</h3>
+            <ul class="trust__list trust__list--no">
+              <li>Which animal turned the wheel</li>
+              <li>That the measurement is true</li>
+              <li>Anything about price</li>
+            </ul>
+          </div>
+        </div>
+        <p class="body trust__close">The whitepaper says all of this itself. This page just makes it something you can touch. The launch values here may differ from the live Sepolia test, which runs a different schedule.</p>
+        <p class="source source--foot">Source: the whitepaper, Security.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot__row">
+      <span>UNOFFICIAL. NOT AFFILIATED WITH SQUEEKCHAIN.</span>
+      <a href="https://x.com/0xmeto_" rel="noopener" target="_blank">Built by @0xmeto_</a>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
