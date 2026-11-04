@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Wheelpaper widget</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <!-- theme before first paint, so a transparent overlay never flashes dark -->
+  <script>document.documentElement.setAttribute("data-theme", /[?&]theme=transparent(?:&|#|$)/.test(location.search) ? "transparent" : "dark");</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&display=swap">
+  <style>
+    :root { --bg: #0b0b0d; --gold: #ffc048; --gold-2: #f2c230; --blue: #5b7cfa; --text: #f2f2f4; --muted: #82828f; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    html[data-theme="dark"], html[data-theme="dark"] body { background: var(--bg); }
+    html[data-theme="transparent"], html[data-theme="transparent"] body { background: transparent; }
+    body { position: relative; font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--text); font-variant-numeric: tabular-nums; }
+    .w { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+    .w__wheel { height: 150px; width: auto; display: block; }
+    .w__rot { transform-box: view-box; transform-origin: 200px 200px; animation: spin 2s linear infinite; }
+    .px { fill: var(--gold); }
+    .px-dim { fill: var(--gold-2); opacity: 0.55; }
+    .px-stand { fill: var(--muted); opacity: 0.55; }
+    .magnet { fill: var(--blue); }
+    .w__sensor .px { fill: var(--muted); }
+    .w__line { margin: 0; min-height: 18px; font-size: 13px; line-height: 18px; letter-spacing: 0.04em; white-space: nowrap; }
+    body[data-state="sleeping"] .w__line { color: var(--muted); }
+    .w__link { position: absolute; top: 6px; right: 8px; font-size: 11px; line-height: 1; color: var(--muted); text-decoration: none; }
+    .w__link:hover { color: var(--gold); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .w__rot { animation: none; } }
+  </style>
+</head>
+<body data-state="decorative">
+  <main class="w">
+    <svg class="w__wheel" viewBox="0 0 400 440" role="img" aria-label="Squeektoshi's wheel, spinning at its live pace">
+      <g id="w-stand"></g>
+      <g id="w-rot" class="w__rot"></g>
+      <g id="w-hub"></g>
+      <g id="w-sensor" class="w__sensor"></g>
+    </svg>
+    <p class="w__line" id="w-line" aria-live="polite"></p>
+  </main>
+  <a class="w__link" href="https://wheelpaper.online" target="_blank" rel="noopener">wheelpaper.online</a>
+  <script src="live.js"></script>
+  <script src="widget.js"></script>
+</body>
+</html>

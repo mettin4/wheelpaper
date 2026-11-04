@@ -148,7 +148,8 @@
   // One reading, every consumer: the strip here, the rest through the event.
   function publish(v) {
     if (strip) render(v);
-    var detail = { state: v.state, data: v.data, wheel: wheelPlan(v.data) };
+    // stats: this cycle's raw /v1/measurement/stats response (or null), shared so THE ALMANAC needs no fetch of its own
+    var detail = { state: v.state, data: v.data, wheel: wheelPlan(v.data), stats: cycleStats };
     var ev;
     try { ev = new CustomEvent("wheelpaper:live", { detail: detail }); }
     catch (e) { ev = document.createEvent("CustomEvent"); ev.initCustomEvent("wheelpaper:live", false, false, detail); }
@@ -182,8 +183,11 @@
   }
 
   // Both calls run in parallel each cycle; the status call alone decides live / sleeping / unreachable.
+  // A page without the strip (the widget) has no distance to show, so it skips the stats call.
+  var cycleStats = null;
   function fetchStatus() {
-    return Promise.all([getJson(API), getJson(STATS_API)]).then(function (r) {
+    return Promise.all([getJson(API), strip ? getJson(STATS_API) : null]).then(function (r) {
+      cycleStats = r[1] && typeof r[1] === "object" ? r[1] : null;
       var lifetime = null;
       try { lifetime = readStats(r[1]); } catch (e) { lifetime = null; }
       return withDistance(readStatus(r[0]), lifetime);

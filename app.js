@@ -506,17 +506,7 @@
     if (!nav) return;
     var dots = Array.prototype.slice.call(nav.querySelectorAll(".secnav__dot"));
     var secs = dots.map(function (d) { return document.querySelector(d.getAttribute("href")); });
-    var queued = false;
-    // active = the last section whose top has crossed the middle of the viewport
-    function update() {
-      queued = false;
-      var mid = window.innerHeight / 2, active = 0;
-      secs.forEach(function (s, i) { if (s.getBoundingClientRect().top <= mid) active = i; });
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) active = secs.length - 1;
-      dots.forEach(function (d, i) { d.setAttribute("aria-current", String(i === active)); });
-    }
-    window.addEventListener("scroll", function () { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
-    window.addEventListener("resize", update);
+    // Which dot is active is decided in menu.js, by the same rule as the sticky menu, so the two never disagree.
     dots.forEach(function (d, i) {
       d.addEventListener("click", function (e) {
         e.preventDefault();
@@ -524,7 +514,6 @@
         if (history.replaceState) history.replaceState(null, "", d.getAttribute("href"));
       });
     });
-    update();
   }
 
   /* ---------- 4. the money ---------- */

@@ -1,0 +1,202 @@
+[
+{
+"tx": "0x29eeb5ef5189f1e0824adaeba2572eb1d84c9114e76fe3b416281c611b13af9e",
+"when": "2026-11-04T05:30:36.000Z",
+"work": "443",
+"dBefore": "10217",
+"dPaper": "10245",
+"dChain": "10245",
+"blocksPaper": "43",
+"blocksChain": "43"
+},
+{
+"tx": "0xcccbd6546f1a3e2a1ddff3268129c4cc9660053a1a49be0fd2558c2b0cce8ebb",
+"when": "2026-11-04T05:20:36.000Z",
+"work": "449",
+"dBefore": "10183",
+"dPaper": "10217",
+"dChain": "10217",
+"blocksPaper": "44",
+"blocksChain": "44"
+},
+{
+"tx": "0xa7bae63a9c95a78b648b248a4f8906b36d67dc21765a00fad4010c83e0c93f61",
+"when": "2026-11-04T05:10:36.000Z",
+"work": "112",
+"dBefore": "10438",
+"dPaper": "10183",
+"dChain": "10183",
+"blocksPaper": "11",
+"blocksChain": "11"
+},
+{
+"tx": "0xa87d5d05aeef2c04aaf53d3f000ac42d16e0e4a99c0aeb2c9ec4b40d12e67c11",
+"when": "2026-11-04T02:55:36.000Z",
+"work": "464",
+"dBefore": "10398",
+"dPaper": "10438",
+"dChain": "10438",
+"blocksPaper": "45",
+"blocksChain": "45"
+},
+{
+"tx": "0xba5b9e296b078bab9f1e53a584ddf73325221404c05978fa765cd381b257329f",
+"when": "2026-11-04T02:40:36.000Z",
+"work": "427",
+"dBefore": "10389",
+"dPaper": "10398",
+"dChain": "10398",
+"blocksPaper": "41",
+"blocksChain": "41"
+},
+{
+"tx": "0xb7c8fe0c467a1b70a33cf8322b14337340881091897836171c3fd78bc104bad1",
+"when": "2026-11-04T02:30:36.000Z",
+"work": "457",
+"dBefore": "10354",
+"dPaper": "10389",
+"dChain": "10389",
+"blocksPaper": "44",
+"blocksChain": "44"
+},
+{
+"tx": "0x0a9e565779ade713d93d25830c6b941dc9020e155e491d2bc2584a2210eb8695",
+"when": "2026-11-04T02:20:36.000Z",
+"work": "420",
+"dBefore": "10349",
+"dPaper": "10354",
+"dChain": "10354",
+"blocksPaper": "41",
+"blocksChain": "41"
+},
+{
+"tx": "0x0120e9817f1bf17a5ad0ba51f7815636ed61198236cf870582dc0a9b98c03c3b",
+"when": "2026-11-04T00:15:36.000Z",
+"work": "498",
+"dBefore": "10277",
+"dPaper": "10349",
+"dChain": "10349",
+"blocksPaper": "48",
+"blocksChain": "48"
+},
+{
+"tx": "0x691863be2573b4dd436843f0294e4d7b04583e186535c3da3f0aaa5a17e2cade",
+"when": "2026-11-04T00:00:36.000Z",
+"work": "188",
+"dBefore": "10470",
+"dPaper": "10277",
+"dChain": "10277",
+"blocksPaper": "18",
+"blocksChain": "18"
+},
+{
+"tx": "0xb57adcd12e88b21947df73eac9bc4356440d1f5a43b486d661ce124d6b670aeb",
+"when": "2026-11-03T23:50:36.000Z",
+"work": "291",
+"dBefore": "10581",
+"dPaper": "10470",
+"dChain": "10470",
+"blocksPaper": "28",
+"blocksChain": "28"
+},
+{
+"tx": "0xf47674c81f204e407e90c2815222e47adf01caa93cd144e203880164478fab33",
+"when": "2026-11-03T23:40:36.000Z",
+"work": "397",
+"dBefore": "10604",
+"dPaper": "10581",
+"dChain": "10581",
+"blocksPaper": "37",
+"blocksChain": "37"
+},
+{
+"tx": "0x005fff572b00aecfd6ee4dcfa4f05cd7268251df122b4202017234ab8265d207",
+"when": "2026-11-03T23:35:36.000Z",
+"work": "613",
+"dBefore": "10442",
+"dPaper": "10604",
+"dChain": "10604",
+"blocksPaper": "59",
+"blocksChain": "59"
+},
+{
+"tx": "0xc8d483a6abf7e2daa114a3c499ced630e1d33ab1b5970e2c96224863f3f9efed",
+"when": "2026-11-03T23:10:36.000Z",
+"work": "568",
+"dBefore": "10313",
+"dPaper": "10442",
+"dChain": "10442",
+"blocksPaper": "55",
+"blocksChain": "55"
+},
+{
+"tx": "0xc2e47928ff8684871203d4ab31c4f19718bda3d356f6b2fa9e9637585334a160",
+"when": "2026-11-03T23:00:48.000Z",
+"work": "298",
+"dBefore": "10412",
+"dPaper": "10313",
+"dChain": "10313",
+"blocksPaper": "28",
+"blocksChain": "28"
+},
+{
+"tx": "0x48ac4970da29b1eb3237c77fb9d262296098f91e81340de73d9040a39bd066d7",
+"when": "2026-11-03T22:50:36.000Z",
+"work": "490",
+"dBefore": "10349",
+"dPaper": "10412",
+"dChain": "10412",
+"blocksPaper": "48",
+"blocksChain": "48"
+},
+{
+"tx": "0x05d4df9f56a9be2ee44a8141ac24df46126ef9cb32714f3352fb261d48a08a0e",
+"when": "2026-11-03T22:40:36.000Z",
+"work": "165",
+"dBefore": "10564",
+"dPaper": "10349",
+"dChain": "10349",
+"blocksPaper": "15",
+"blocksChain": "15"
+},
+{
+"tx": "0xa3d4cf32a098f0ceb8c476b5cedbf1ede03631211e0e552ec14a5eced7bf7c54",
+"when": "2026-11-03T22:30:48.000Z",
+"work": "412",
+"dBefore": "10574",
+"dPaper": "10564",
+"dChain": "10564",
+"blocksPaper": "39",
+"blocksChain": "39"
+},
+{
+"tx": "0x104f3e936d915a6afaa4cbfd617ccdb04406b6c54acbdb33485d065b935b932f",
+"when": "2026-11-03T22:20:36.000Z",
+"work": "535",
+"dBefore": "10478",
+"dPaper": "10574",
+"dChain": "10574",
+"blocksPaper": "51",
+"blocksChain": "51"
+},
+{
+"tx": "0x95a927d8b89a2c53db823dc14a8b2c2e28832fb765dfdd5e326d60b8f81de361",
+"when": "2026-11-03T22:10:48.000Z",
+"work": "362",
+"dBefore": "10528",
+"dPaper": "10478",
+"dChain": "10478",
+"blocksPaper": "35",
+"blocksChain": "35"
+},
+{
+"tx": "0x078f887e517da9f29a228497144aee15d169f722b71936041014119a82477177",
+"when": "2026-11-03T21:50:36.000Z",
+"work": "409",
+"dBefore": "10539",
+"dPaper": "10528",
+"dChain": "10528",
+"blocksPaper": "39",
+"blocksChain": "39"
+}
+]
