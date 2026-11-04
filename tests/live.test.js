@@ -88,4 +88,30 @@ assert.equal(moneyLine(2994), "Sepolia has completed 2,994 blocks so far. At lau
   assert.deepEqual(simulateNight(2000), launch, "default start is still the launch value");
 }
 
+/* ---------- lifetime distance: /v1/measurement/stats lifetime.observedDistanceMm ---------- */
+const { readStats, withDistance, LABEL_LIFETIME, LABEL_TODAY } = require("../live.js");
+
+// shape of GET /v1/measurement/stats?range=7d, trimmed to the field the strip reads
+assert.equal(readStats({ lifetime: { observedDistanceMm: "88439184" } }), 88439184);
+assert.equal(readStats({ lifetime: { observedDistanceMm: 1200 } }), 1200);
+for (const bad of [null, "x", {}, { lifetime: null }, { lifetime: {} }, { lifetime: { observedDistanceMm: "-5" } },
+                   { lifetime: { observedDistanceMm: "8.8e7" } }]) {
+  assert.equal(readStats(bad), null);
+}
+
+// stats worked: lifetime value and label; today's distanceMm stays on data.mm untouched
+{
+  const d = withDistance(readStatus(status({ measurement: { distanceMm: 0 } })), 88439184);
+  assert.equal(d.distanceMm, 88439184); assert.equal(d.distanceLabel, LABEL_LIFETIME); assert.equal(d.mm, 0);
+  assert.equal(fmtKm(d.distanceMm), "88.44");
+}
+// stats failed, status worked: today's value with the today label
+{
+  const d = withDistance(readStatus(status()), null);
+  assert.equal(d.distanceMm, 9295386); assert.equal(d.distanceLabel, LABEL_TODAY);
+}
+// status failed: still "no data" whatever stats returned, so the unreachable state is unchanged
+assert.equal(withDistance(readStatus(null), 88439184), null);
+assert.equal(view(withDistance(null, 88439184), null).state, "unreachable");
+
 console.log("live.test.js: all assertions passed");

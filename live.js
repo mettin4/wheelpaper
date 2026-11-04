@@ -11,9 +11,13 @@
        measurement.observedAt          last wheel reading, ISO UTC
        measurement.rpmMilli            wheel speed, revolutions per minute x 1000
        builder.anchor.workPerThousandBlocks  current difficulty D (whitepaper launch value 10,875)
+     measurement.distanceMm resets every day, so the distance comes from a second GET in the same cycle:
+       /v1/measurement/stats  lifetime.observedDistanceMm  total distance since the first reading
+     If only that call fails, the strip falls back to today's distanceMm and says so in the label.
      The same reading feeds the hero wheel, the difficulty start toggle and the money line:
      each poll dispatches "wheelpaper:live" on document; app.js listens. */
   var API = "https://api.squeekchain.com/v1/status";
+  var STATS_API = "https://api.squeekchain.com/v1/measurement/stats?range=7d";
   var TIMEOUT_MS = 5000;
   var REFRESH_MS = 60000;
   var DIGITS = /^\d+$/;
@@ -43,6 +47,23 @@
              rpm: rpmMilli === null ? null : rpmMilli / 1000, difficulty: difficulty > 0 ? difficulty : null };
   }
 
+  // Lifetime distance in mm from /v1/measurement/stats, or null if the response does not carry it.
+  function readStats(json) {
+    var l = json && typeof json === "object" ? json.lifetime : null;
+    return l && typeof l === "object" ? intOf(l.observedDistanceMm) : null;
+  }
+
+  var LABEL_LIFETIME = "Distance run, lifetime";
+  var LABEL_TODAY = "Distance run, today";
+  // Lifetime distance when the stats call worked, today's distance from /status when it did not.
+  function withDistance(data, lifetimeMm) {
+    if (!data) return null;
+    var lifetime = lifetimeMm !== null && lifetimeMm !== undefined;
+    data.distanceMm = lifetime ? lifetimeMm : data.mm;
+    data.distanceLabel = lifetime ? LABEL_LIFETIME : LABEL_TODAY;
+    return data;
+  }
+
   // Seconds per revolution at the hamster's pace, clamped so the drawing stays readable.
   function wheelDuration(rpm) { return Math.min(10, Math.max(0.4, 60 / rpm)); }
 
@@ -70,7 +91,9 @@
   }
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { readStatus: readStatus, view: view, fmtKm: fmtKm, utcHHMM: utcHHMM, API: API,
+    module.exports = { readStatus: readStatus, readStats: readStats, withDistance: withDistance,
+                       LABEL_LIFETIME: LABEL_LIFETIME, LABEL_TODAY: LABEL_TODAY, STATS_API: STATS_API,
+                       view: view, fmtKm: fmtKm, utcHHMM: utcHHMM, API: API,
                        wheelDuration: wheelDuration, wheelPlan: wheelPlan,
                        LINE_LIVE: LINE_LIVE, LINE_DOWN: LINE_DOWN, sleepingLine: sleepingLine };
   }
@@ -116,6 +139,7 @@
     height: document.getElementById("tn-height"),
     work: document.getElementById("tn-work"),
     km: document.getElementById("tn-km"),
+    kmLabel: document.getElementById("tn-km-label"),
     line: document.getElementById("tn-line"),
     down: document.getElementById("tn-down")
   };
@@ -135,25 +159,35 @@
     strip.setAttribute("data-state", v.state);
     strip.setAttribute("data-dot", v.dot);
     if (v.data) {
-      var h = fmtInt(v.data.height), w = fmtInt(v.data.work), k = fmtKm(v.data.mm);
+      var h = fmtInt(v.data.height), w = fmtInt(v.data.work), k = fmtKm(v.data.distanceMm);
       dotMatrix(el.height, h); el.height.setAttribute("aria-label", h);
       dotMatrix(el.work, w); el.work.setAttribute("aria-label", w);
       dotMatrix(el.km, k); el.km.setAttribute("aria-label", k + " km");
+      el.kmLabel.textContent = v.data.distanceLabel;
     }
     el.line.textContent = v.line;
     el.down.textContent = LINE_DOWN;
   }
 
-  function fetchStatus() {
+  // One GET with its own timeout; resolves to parsed JSON or null, never rejects.
+  function getJson(url) {
     var ctrl = typeof AbortController === "function" ? new AbortController() : null;
     var killer = setTimeout(function () { if (ctrl) ctrl.abort(); }, TIMEOUT_MS);
-    var request = fetch(API, { method: "GET", mode: "cors", credentials: "omit", cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+    var request = fetch(url, { method: "GET", mode: "cors", credentials: "omit", cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; }); // abort, CORS, DNS, bad JSON: all just "no data", never an unhandled rejection
     var deadline = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, TIMEOUT_MS + 50); });
     return Promise.race([request, deadline])
-      .then(readStatus)
       .then(function (res) { clearTimeout(killer); return res; }, function () { clearTimeout(killer); return null; });
+  }
+
+  // Both calls run in parallel each cycle; the status call alone decides live / sleeping / unreachable.
+  function fetchStatus() {
+    return Promise.all([getJson(API), getJson(STATS_API)]).then(function (r) {
+      var lifetime = null;
+      try { lifetime = readStats(r[1]); } catch (e) { lifetime = null; }
+      return withDistance(readStatus(r[0]), lifetime);
+    });
   }
 
   function tick() {
