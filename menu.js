@@ -3,10 +3,12 @@
   "use strict";
 
   /* ---------- scroll-spy rule (pure, testable) ----------
-     Active = the section whose heading has most recently reached the bar's line (bar height + a small margin):
-     of the headings at or above the line, the lowest one. At the very bottom of the page the lowest section on
-     the page wins, since it may never reach the line. Works from positions alone, whatever order the list is in. */
-  var LINE_MARGIN = 8;
+     Active = the section whose heading has most recently entered the top quarter of the viewport, so the label
+     matches what the reader is looking at: of the headings at or above that line, the lowest one. At the very
+     bottom of the page the lowest section on the page wins, since it may never reach the line. Works from
+     positions alone, whatever order the list is in. */
+  var LINE_FRACTION = 0.25;
+  function spyLine(viewportHeight) { return viewportHeight * LINE_FRACTION; }
   function activeIndex(headingTops, line, atBottom) {
     var a = -1, best = -Infinity, low = 0;
     for (var i = 0; i < headingTops.length; i++) {
@@ -21,7 +23,17 @@
     for (var j = 1; j < headingTops.length; j++) if (headingTops[j] < headingTops[top]) top = j;
     return top;
   }
-  if (typeof module !== "undefined" && module.exports) module.exports = { activeIndex: activeIndex, LINE_MARGIN: LINE_MARGIN };
+
+  /* ---------- deep links (pure, testable) ----------
+     Every hash is a real element id, so the browser lands them itself. These three are the ids those sections had
+     before the cover: older links to them still land, but only through this script. */
+  var ALIASES = { "rounds-and-blocks": "rounds", proof: "settlements", "night-shift": "nightshift" };
+  function isAlias(hash) { return Object.prototype.hasOwnProperty.call(ALIASES, String(hash || "").replace(/^#/, "")); }
+  function sectionId(hash) {
+    var h = String(hash || "").replace(/^#/, "");
+    return isAlias(h) ? ALIASES[h] : h;
+  }
+  if (typeof module !== "undefined" && module.exports) module.exports = { activeIndex: activeIndex, spyLine: spyLine, LINE_FRACTION: LINE_FRACTION, sectionId: sectionId, isAlias: isAlias, ALIASES: ALIASES };
   if (typeof document === "undefined") return;
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -32,10 +44,11 @@
   if (menu && hero) {
     var track = menu.querySelector(".menu__track");
     var links = Array.prototype.slice.call(menu.querySelectorAll(".menu__link"));
-    var secs = links.map(function (l) { return document.querySelector(l.getAttribute("href")); });
+    var secs = links.map(function (l) { return document.getElementById(sectionId(l.getAttribute("href"))); });
     var heads = secs.map(function (s) { return s && (s.querySelector("h1, h2") || s); });
     // the right-edge dots list the same sections in the same order; one rule lights both
     var dots = Array.prototype.slice.call(document.querySelectorAll(".secnav__dot"));
+    var cards = Array.prototype.slice.call(document.querySelectorAll(".contents__card"));
     var active = -1, queued = false, pinned = null;
 
     function show(on) {
@@ -45,15 +58,15 @@
     if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { show(!es[0].isIntersecting); }).observe(hero);
     else show(true);
 
-    // A click lands its heading 16px below the bar (scroll-margin), which is short of the line, so the clicked
-    // section is pinned as active until the reader scrolls by hand.
+    // A click near the end of the page can land short of the line, so the clicked section is pinned as active
+    // until the reader scrolls by hand.
     function update() {
       queued = false;
       var now = pinned;
       if (now === null) {
         var tops = heads.map(function (h) { return h ? h.getBoundingClientRect().top : Infinity; });
         var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-        now = activeIndex(tops, menu.offsetHeight + LINE_MARGIN, atBottom);
+        now = activeIndex(tops, spyLine(window.innerHeight), atBottom);
       }
       if (now === active) return;
       active = now;
@@ -73,18 +86,43 @@
     ["wheel", "touchstart", "mousedown"].forEach(function (t) { window.addEventListener(t, unpin, { passive: true }); });
     window.addEventListener("keydown", function (e) { if (/^(Arrow|Page|Home|End| )/.test(e.key)) unpin(); });
     function pin(i) { pinned = i; update(); }
-    links.forEach(function (l, i) {
-      l.addEventListener("click", function (e) {
-        if (!secs[i]) return;
+    function indexOfHash(hash) { return secs.indexOf(document.getElementById(sectionId(hash))); }
+
+    // Menu, dots and cards share one path. The hash changes only here, on a click, never while scrolling.
+    links.concat(dots, cards).forEach(function (a) {
+      var href = a.getAttribute("href"), i = indexOfHash(href);
+      a.addEventListener("click", function (e) {
+        if (i < 0 || e.metaKey || e.ctrlKey || e.shiftKey) return; // a new tab or window keeps the plain link
         e.preventDefault();
         secs[i].scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-        if (history.replaceState) history.replaceState(null, "", l.getAttribute("href"));
+        if (history.replaceState) history.replaceState(null, "", href);
         pin(i);
       });
     });
-    // app.js scrolls on a dot click; this only records which section was asked for
-    dots.forEach(function (d, i) { d.addEventListener("click", function () { pin(i); }); });
     update();
+
+    // Opened with a hash, or the hash edited by hand. The browser has already gone to a real id, so only the active
+    // section is marked; an alias has no element to go to, so it lands here. Fonts and live data can still move the
+    // page, so land again whenever its height changes in the first seconds, unless the reader has gone elsewhere.
+    function land(i) { secs[i].scrollIntoView({ behavior: "auto", block: "start" }); pin(i); }
+    function arrive() {
+      var i = location.hash ? indexOfHash(location.hash) : -1;
+      if (i >= 0) { if (isAlias(location.hash)) land(i); else pin(i); }
+      return i;
+    }
+    window.addEventListener("hashchange", arrive);
+    var cold = arrive();
+    if (cold >= 0) {
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      var settle = function () { if (pinned === cold) land(cold); };
+      window.addEventListener("load", settle);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(settle);
+      if ("ResizeObserver" in window) {
+        var watch = new ResizeObserver(settle);
+        watch.observe(document.querySelector("main"));
+        setTimeout(function () { watch.disconnect(); }, 5000);
+      }
+    }
   }
 
   /* ---------- THE WIDGET: copy embed ---------- */

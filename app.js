@@ -88,6 +88,8 @@
       moneyLine: moneyLine
     };
   }
+  // THE NIGHT SHIFT (nightshift.js) plays on these same functions: shared, not copied.
+  if (typeof window !== "undefined") window.Wheelpaper = { stepRound: stepRound, START_D: START_D, UNITS_PER_BLOCK: UNITS_PER_BLOCK };
   if (typeof document === "undefined") return;
 
   /* ---------- helpers ---------- */
@@ -148,6 +150,8 @@
   function dotMatrix(el, text) {
     el.innerHTML = text.split(",").map(digitGroup).join('<span class="dm__sep" aria-hidden="true">,</span>');
   }
+  window.Wheelpaper.dotMatrix = dotMatrix;
+  window.Wheelpaper.GLYPHS = GLYPHS;
 
   /* ---------- 1. the wheel ---------- */
   function circle(parent, cx, cy, r, cls) {
@@ -447,14 +451,16 @@
     var tog = document.getElementById("start-toggle"), footnote = document.getElementById("start-note");
     if (!tog || !footnote) return;
     var NOTE_LAUNCH = footnote.textContent;
-    var NOTE_TONIGHT = "Tonight's real Sepolia difficulty, read live from the public Squeekchain API.";
     var opts = Array.prototype.slice.call(tog.querySelectorAll("[data-start]"));
     var tonightBtn = tog.querySelector('[data-start="tonight"]');
     function pick(which) {
       start.pick = which;
       opts.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.start === which)); });
-      footnote.textContent = which === "tonight" ? NOTE_TONIGHT : NOTE_LAUNCH;
+      setNote();
       update();
+    }
+    function setNote() {
+      footnote.textContent = start.pick === "tonight" ? "This night starts at difficulty " + fmt(start.live) + ", read from the chain." : NOTE_LAUNCH;
     }
     opts.forEach(function (b) { b.addEventListener("click", function () { pick(b.dataset.start); }); });
     onLive(function (d) {
@@ -468,7 +474,7 @@
         tog.removeAttribute("inert");
         tog.removeAttribute("aria-hidden");
       }
-      if (changed && start.pick === "tonight") update();
+      if (changed && start.pick === "tonight") { setNote(); update(); }
     });
   }
 
@@ -497,22 +503,6 @@
       btn.classList.add("is-done");
       clearTimeout(timer);
       timer = setTimeout(function () { btn.textContent = label; btn.classList.remove("is-done"); }, 1000);
-    });
-  }
-
-  /* ---------- section dots ---------- */
-  function runSectionNav() {
-    var nav = document.getElementById("secnav");
-    if (!nav) return;
-    var dots = Array.prototype.slice.call(nav.querySelectorAll(".secnav__dot"));
-    var secs = dots.map(function (d) { return document.querySelector(d.getAttribute("href")); });
-    // Which dot is active is decided in menu.js, by the same rule as the sticky menu, so the two never disagree.
-    dots.forEach(function (d, i) {
-      d.addEventListener("click", function (e) {
-        e.preventDefault();
-        secs[i].scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-        if (history.replaceState) history.replaceState(null, "", d.getAttribute("href"));
-      });
     });
   }
 
@@ -661,5 +651,4 @@
   runSqueeks();
   sliderAffordance(document.getElementById("work"), true);
   sliderAffordance(document.getElementById("blocks"), false);
-  runSectionNav();
 })();

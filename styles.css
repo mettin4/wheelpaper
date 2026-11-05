@@ -62,7 +62,7 @@ body {
   background: linear-gradient(180deg, var(--gold-hi), var(--gold));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.h2 { font-size: var(--fs-56); color: var(--gold); margin-bottom: var(--s6); }
+.h2 { font-size: var(--fs-56); color: var(--gold); margin-bottom: var(--head-gap); }
 .subtitle { font-family: var(--font-head); font-weight: 300; font-size: var(--fs-36); line-height: 1.1; margin: var(--s2) 0 var(--s4); color: var(--text); }
 .body { font-size: var(--fs-18); line-height: 1.6; max-width: 56ch; margin: 0 0 var(--s3); color: var(--text); }
 .small, .label, .source { font-size: var(--fs-13); color: var(--muted); letter-spacing: 0.04em; }
@@ -88,7 +88,7 @@ body {
 .chart canvas, .clock__track { pointer-events: none; }
 
 /* 1. wheel */
-.s-wheel { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; position: relative; padding: var(--s8) 0 var(--s12); }
+.s-wheel { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; position: relative; padding: var(--s8) 0 var(--s12); }
 .s-wheel__grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--s6); align-items: center; width: 100%; }
 /* both columns share one height: title top meets the wheel heading, the small line sits on the counter label's line */
 .s-wheel__grid { align-items: stretch; }
@@ -118,14 +118,12 @@ body {
 @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
 /* 2. clocks */
-.s-clocks, .s-diff { padding: var(--s12) 0; }
 .clocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s3); width: 100%; margin-bottom: var(--s6); }
 /* label in the top row, an equal empty bottom row: the track sits on the box's vertical centre at any label height */
-.clock { background: var(--surface); border: 1px solid var(--line-2); padding: var(--s3); display: grid; grid-template-rows: 1fr auto 1fr; row-gap: var(--s2); }
+.clock { background: var(--surface); border: 1px solid var(--line-2); padding: 10px var(--s3); display: grid; grid-template-rows: 1fr auto 1fr; }
 .clock::after { content: ""; }
 .clock__label { margin: 0; align-self: start; }
-.clock__track { display: block; width: 100%; height: 48px; }
-.s-clocks__copy { margin: 0 auto; max-width: 620px; text-align: center; }
+.clock__track { display: block; width: 100%; height: 24px; }
 
 /* 3. difficulty */
 .control { margin-bottom: var(--s6); }
@@ -233,7 +231,6 @@ body {
 .source--foot { margin-top: var(--s4); }
 .s-wheel__notes .source--foot { margin-top: 0; }
 .s-trust .source--foot { margin-top: var(--s3); }
-.s-clocks__copy + .source--foot { text-align: center; }
 
 /* copy result: bordered, no fill; 44px tall so it is a full touch target */
 .copy-btn {
@@ -247,7 +244,6 @@ body {
 .copy-btn.is-done { color: var(--green); border-color: var(--green); }
 
 /* shared bits for 4-6 */
-.s-money, .s-squeeks, .s-trust { padding: var(--s12) 0; }
 .num-sm { font-size: var(--fs-13); color: var(--muted); font-variant-numeric: tabular-nums; }
 .note, .fixed-line { font-size: var(--fs-15); margin: 0; }
 .note { display: inline-block; margin-top: var(--s3); padding: var(--s1) var(--s2); border: 1px solid var(--gold); color: var(--gold); }
@@ -304,7 +300,6 @@ body {
 .trust__list--yes li::before { background: var(--green); }
 .trust__list--no li::before { background: transparent; box-shadow: inset 0 0 0 2px var(--muted); }
 .trust__close { margin: 0; color: var(--muted); }
-.s-trust { padding-bottom: var(--s12); } /* exactly 96px from the closing paragraph to the footer rule */
 
 /* section dots: fixed on the right edge, desktop only */
 .secnav { position: fixed; right: var(--s3); top: 50%; transform: translateY(-50%); z-index: 10; display: flex; flex-direction: column; }
@@ -362,7 +357,7 @@ body {
   * { transition: none !important; }
 }
 
-/* TONIGHT strip: live Sepolia values. Fixed height in every state, so data arriving never moves the page. */
+/* TONIGHT strip: live Sepolia values. Fixed height in every state, so data arriving never moves the page (tablets: see THE COVER). */
 .tonight {
   --tn-h: 144px;
   height: var(--tn-h); overflow: hidden;
@@ -438,7 +433,6 @@ body {
 /* THE PROOF: whitepaper rule vs SqueekCore's round records (proof.js).
    Every row slot is a fixed height and the area keeps its size in every state, so data arriving,
    failing or changing never moves anything below it. */
-.s-proof { padding: var(--s12) 0; }
 .proof__area { position: relative; margin: var(--s4) 0 var(--s3); }
 .proof__table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .proof__table th {
@@ -462,6 +456,7 @@ tr[data-verdict="off"] .proof__mark { background: transparent; box-shadow: inset
   text-align: center; font-size: var(--fs-15); color: var(--muted);
 }
 .s-proof[data-state="unreachable"] .proof__table { visibility: hidden; }
+.s-proof[data-state="few"] .proof__table { visibility: hidden; }
 .proof__stamp { margin: 0; min-height: calc(2 * 1.6em); font-size: var(--fs-15); line-height: 1.6; color: var(--muted); }
 .proof__stamp[data-stamp="all"] { color: var(--gold); letter-spacing: 0.15em; }
 
@@ -493,10 +488,11 @@ tr[data-verdict="off"] .proof__mark { background: transparent; box-shadow: inset
 /* ---------- v4 round 2 ---------- */
 :root { --muted-dim: #4b4b55; --menu-h: 48px; }
 
-/* Spacing: one step tighter between sections, 96 + 96 -> 56 + 56 (mobile 40 + 40). The hero, and the
-   96px from THE TRUST's last line to the footer, stay as they were. Anchors clear the sticky menu. */
-.s-clocks, .s-diff, .s-money, .s-squeeks, .s-proof, .s-almanac, .s-widget, .s-trust { padding-top: 56px; padding-bottom: 56px; }
-.s-trust { padding-bottom: var(--s12); }
+/* The vertical scale, one rule for every section after the cover. Two sections meet at 120px (mobile 72px), half from
+   each; the last section keeps its half above the footer. Headings sit --head-gap above what follows them.
+   Anchors clear the sticky menu. */
+:root { --section-y: 60px; --head-gap: var(--s4); }
+.s-clocks, .s-diff, .s-money, .s-squeeks, .s-proof, .s-almanac, .s-widget, .s-night, .s-trust { padding-top: var(--section-y); padding-bottom: var(--section-y); }
 main > section, main > aside { scroll-margin-top: calc(var(--menu-h) + 16px); } /* a section lands 16px clear of the bar */
 
 /* Sticky section menu (menu.js) */
@@ -563,8 +559,7 @@ main > section, main > aside { scroll-margin-top: calc(var(--menu-h) + 16px); } 
 .wdg__embed .source { margin: 0; }
 
 @media (max-width: 720px) {
-  .s-clocks, .s-diff, .s-money, .s-squeeks, .s-proof, .s-almanac, .s-widget, .s-trust { padding-top: var(--s5); padding-bottom: var(--s5); }
-  .s-trust { padding-bottom: var(--s12); }
+  :root { --section-y: 36px; }
   /* the bar scrolls sideways; its edges fade so cut-off names read as "more this way" */
   .menu__track { gap: var(--s3); -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
   /* the map keeps a readable cell size and scrolls inside its own box; day names stay pinned on the left */
@@ -575,6 +570,168 @@ main > section, main > aside { scroll-margin-top: calc(var(--menu-h) + 16px); } 
   .alm__plaque { flex: 1 1 100%; }
 }
 
+/* ---------- v5: THE NIGHT SHIFT (nightshift.js) ----------
+   One viewport below the bar, at 1366 x 768 and up: heading, brief, stage. The stage and the dawn report share one
+   grid cell, so the section keeps its height from the first paint to the report. */
+#nightshift { scroll-margin-top: 4px; } /* lands the heading 16px below the bar: 4 + 60 of section padding */
+.s-night { touch-action: manipulation; }
+.ns__brief { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); align-items: start; margin-bottom: var(--s3); }
+.ns__brief .body { margin: 0; max-width: none; }
+.ns__how { margin: 0; padding: var(--s2); border: 1px solid var(--line-2); background: var(--surface); font-size: var(--fs-15); line-height: 1.6; color: var(--text); }
+.ns__how-tag { color: var(--gold); }
+
+.ns { display: grid; scroll-margin-top: calc(var(--menu-h) + 16px); }
+.ns__play, .ns__dawn { grid-area: 1 / 1; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--s6); min-width: 0; }
+.ns__dawn { visibility: hidden; align-items: center; }
+.s-night[data-state="dawn"] .ns__dawn { visibility: visible; }
+.s-night[data-state="dawn"] .ns__play { visibility: hidden; }
+
+/* left: the wheel, the button right under it. A press anywhere here counts, including where the button was. */
+.ns__stage {
+  display: flex; flex-direction: column; align-items: center; gap: var(--s1); outline: none; cursor: default;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
+}
+.s-night[data-state="running"] .ns__stage { cursor: pointer; }
+.wheel.ns__wheel { width: auto; max-width: 100%; height: 300px; flex: none; }
+.ns__start {
+  width: 100%; min-height: 56px; padding: 0 var(--s2); background: transparent; border: 1px solid var(--gold); color: var(--gold); visibility: hidden;
+  font-family: var(--font-head); font-weight: 600; font-size: var(--fs-24); letter-spacing: 0.15em; white-space: nowrap; cursor: pointer;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.s-night[data-state="idle"] .ns__start { visibility: visible; }
+.ns__start:hover { color: var(--bg); background: var(--gold); }
+.ns__start:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+/* right: seconds, target and gauge, the three running numbers */
+.ns__hud { display: flex; flex-direction: column; justify-content: space-between; gap: var(--s2); min-width: 0; }
+.ns__target { margin: 0 0 var(--s1); min-height: 1.6em; font-size: var(--fs-15); line-height: 1.6; letter-spacing: 0.1em; color: var(--gold); }
+.ns__gauge { position: relative; height: 24px; }
+.ns__rail {
+  position: absolute; left: 0; right: 0; top: 8px; height: 8px;
+  background-image: radial-gradient(circle at center, var(--gold-2) 2px, transparent 2.5px); background-size: 8px 8px; background-repeat: repeat-x; opacity: 0.55;
+}
+.ns__tick { position: absolute; left: 50%; top: 0; width: 2px; height: 24px; margin-left: -1px; background: var(--gold); }
+.ns__mark { position: absolute; left: 50%; top: 6px; width: 12px; height: 12px; margin-left: -6px; background: var(--blue); transition: left 300ms var(--ease); }
+.ns__proj { margin: var(--s1) 0 0; min-height: 1.6em; font-size: var(--fs-13); line-height: 1.6; color: var(--muted); }
+.ns__nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s3); }
+.ns__fast { display: block; min-height: 1.6em; font-size: var(--fs-13); line-height: 1.6; color: var(--muted); letter-spacing: 0.04em; visibility: hidden; }
+.ns__fast[data-on] { visibility: visible; }
+.ns__work[data-hit] .on { fill: var(--gold-hi); }
+
+/* the dawn report: stamp and buttons left, the numbers right, in the stage's own columns */
+.ns__report-h { color: var(--gold); margin-bottom: var(--s2); }
+.ns__verdict { display: block; width: fit-content; margin: 0 0 var(--s3); min-height: calc(1.6em + 14px); padding: 6px var(--s2); border: 1px solid var(--muted); color: var(--muted); font-size: var(--fs-15); line-height: 1.6; letter-spacing: 0.1em; white-space: nowrap; }
+.ns__verdict[data-tier="almost"] { border-color: var(--gold); color: var(--gold); }
+.ns__verdict[data-tier="ran"] { border-color: var(--gold); background: var(--gold); color: var(--bg); }
+.ns__btns { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); }
+.ns__btns .copy-btn { margin: 0; }
+.ns__dawn-body { min-width: 0; }
+.ns__report { margin: 0; }
+.ns__row { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); min-height: 56px; border-bottom: 1px solid var(--line); }
+.ns__row dd { margin: 0; }
+.ns__passes { display: flex; align-items: flex-end; justify-content: flex-end; gap: 6px var(--s1); }
+.ns__word { font-size: var(--fs-13); line-height: 1; color: var(--muted); white-space: nowrap; }
+.ns__day { margin: var(--s2) 0 0; min-height: 1.6em; font-size: var(--fs-13); line-height: 1.6; color: var(--muted); visibility: hidden; }
+.ns__day[data-ready] { visibility: visible; }
+
+.ns__foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s1) var(--s3); margin-top: var(--s2); }
+.ns__foot .source { margin: 0; }
+.ns__best { margin: 0; min-height: 1.6em; font-size: var(--fs-13); line-height: 1.6; color: var(--muted); letter-spacing: 0.04em; visibility: hidden; }
+.ns__best[data-ready] { visibility: visible; }
+
+@media (max-width: 1000px) {
+  .ns__nums { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2) var(--s3); }
+}
+@media (max-width: 720px) {
+  #nightshift { scroll-margin-top: 28px; }
+  .ns__brief { grid-template-columns: minmax(0, 1fr); gap: var(--s2); margin-bottom: var(--s3); }
+  .ns__how { font-size: var(--fs-13); padding: 12px; }
+  /* running: wheel, seconds and gauge on the first screen, with the numbers right after them */
+  .ns__play, .ns__dawn { grid-template-columns: minmax(0, 1fr); gap: var(--s2); }
+  .ns__dawn { align-items: start; }
+  .wheel.ns__wheel { height: 190px; }
+  .ns__hud { justify-content: flex-start; }
+  .ns__hud .dm--lg { --dm-h: 40px; }
+  .ns__hud .dm--md { --dm-h: 32px; }
+  .ns__verdict { width: auto; text-align: center; font-size: var(--fs-13); margin-bottom: var(--s2); }
+  .ns__row { min-height: 48px; }
+  /* the two rows with words in their values: label above value, one fixed height, so no number can wrap them */
+  .ns__row--stack { flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; min-height: 76px; }
+  .ns__row--stack .ns__passes { justify-content: flex-start; }
+}
+
+/* audit: a solid bar, so page text never ghosts through it */
+.menu { background: var(--bg); }
+
+/* audit: declare the dark page, so native scrollbars and controls stop rendering light */
+:root { color-scheme: dark; }
+
+/* audit: no one-word last lines in the subtitle or the footer */
+.subtitle, .foot__row span { text-wrap: balance; }
+/* audit: the menu overflows below about 1040px; the fade is the cue that it scrolls sideways */
+@media (max-width: 1040px) {
+  .menu__track { -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+}
+@media (max-width: 720px) {
+  /* audit: TONIGHT's content centres in its strip instead of hugging the top border */
+  .tonight__body { flex: none; width: 100%; }
+  /* audit: level values stay on one line in the two-column card */
+  .level-card .num { font-size: 17px; }
+}
+
 /* TONIGHT: the API is up with no measurement yet. Same layout as unreachable, its own line. */
 .tonight[data-state="waiting"] .tonight__body { visibility: hidden; }
 .tonight[data-state="waiting"] .tonight__down { visibility: visible; }
+
+/* ---------- THE COVER: the contents grid between the TONIGHT strip and the first section ---------- */
+.contents { padding: var(--section-y) 0; }
+.contents__label { margin: 0 0 var(--head-gap); font-family: var(--font-head); font-weight: 700; font-size: 32px; line-height: 0.95; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); }
+.contents__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.contents__grid li { display: grid; min-width: 0; }
+.contents__card {
+  position: relative; display: flex; flex-direction: column; gap: var(--s1); min-height: 44px; padding: var(--s2);
+  background: var(--surface); border: 1px solid var(--line-2); color: inherit; text-decoration: none;
+  transition: border-color 120ms ease;
+}
+.contents__card:hover, .contents__card--play { border-color: var(--gold); }
+.contents__card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.contents__glyph { display: block; width: 28px; height: 28px; flex: none; }
+.contents__glyph .on { fill: var(--gold); }
+.contents__glyph .dim { fill: var(--gold-2); opacity: 0.55; }
+.contents__glyph .blue { fill: var(--blue); }
+.contents__glyph .green { fill: var(--green); }
+.contents__glyph .mute { fill: var(--muted); }
+.contents__glyph .off { fill: var(--line-2); }
+.contents__name { font-family: var(--font-mono); font-size: var(--fs-15); line-height: 1.3; text-transform: uppercase; color: var(--text); }
+.contents__line { font-size: var(--fs-13); line-height: 1.4; color: var(--muted); }
+.contents__tag { position: absolute; top: var(--s1); right: var(--s1); font-family: var(--font-mono); font-size: 11px; line-height: 1; letter-spacing: 0.1em; color: var(--gold); }
+@media (max-width: 720px) {
+  .contents__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contents__card { padding: 12px; }
+}
+
+/* ---------- THE COVER: the first screen ----------
+   Hero and TONIGHT strip together are exactly one screen: the strip keeps its height, the hero takes the rest, and the
+   fold lands on the strip's bottom edge. The wheel gives way to the viewport's height, as it already does on phones:
+   449px is the strip plus the hero's padding, the rest of its figure and 1px for rounding. 80px below keeps the content clear of the
+   scroll hint. On a phone the hero's content is taller than the screen, so there the cover simply runs longer. */
+.cover { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; }
+.cover > .tonight { flex: none; }
+@media (min-width: 721px) {
+  .s-wheel { padding: var(--s5) 0 80px; }
+  .s-wheel__fig .wheel { max-width: clamp(220px, calc((100svh - 449px) * 400 / 440), 400px); }
+}
+
+/* TONIGHT on tablets: the readouts wrap to two rows and the line to two, so the strip grows with them. The floor is
+   that wrapped height, so data arriving still never moves the page. 1440 and 375 keep their fixed heights. */
+@media (min-width: 721px) and (max-width: 860px) {
+  .tonight { --tn-h: 198px; height: auto; min-height: var(--tn-h); }
+  .tonight__row { height: auto; min-height: calc(var(--tn-h) - 2px); padding-top: var(--s2); padding-bottom: var(--s2); }
+}
+
+/* TONIGHT: the line keeps its tallest wrap, so a shorter sentence on a later poll never re-centres the strip */
+@media (max-width: 1160px) { .tonight__line { min-height: calc(2 * 1.6em); } }
+@media (max-width: 720px) { .tonight__line { min-height: calc(3 * 1.6em); } }
+
+/* The chart and its source line read as one block */
+.s-diff .chart { margin-bottom: var(--s1); }

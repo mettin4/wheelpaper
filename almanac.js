@@ -3,10 +3,11 @@
   "use strict";
 
   /* ---------- reading the feed (pure, testable) ----------
-     activity.days[]           one entry per UTC day, oldest first
-       .date                   "2026-11-03"
-       .buckets[48]            .startMinuteUtc, .coverage ("complete" | "partial" | "future"), .workUnits (string | null)
-     activity.summary          .observedWorkUnits, .activeDayCount, .peakWindowStartMinuteUtc
+     activity.days[]           seven rows, oldest first, that turn at window.startAt's time of day (noon UTC), not midnight:
+       .date                   "2026-11-03": that date's afternoon, then the NEXT date's morning
+       .buckets[48]            .startMinuteUtc, .coverage ("complete" | "partial" | "future" | "missing"), .workUnits (string | null)
+     activity.summary          .observedWorkUnits, .peakWindowStartMinuteUtc
+     window.startAt            "2026-10-30T12:00:00.000Z"
      The same response feeds TONIGHT's lifetime distance; live.js passes it along, so this section never fetches. */
   var DIGITS = /^\d+$/;
   function intOf(v) {
@@ -33,25 +34,43 @@
     return p(Math.floor(minute / 60)) + ":" + p(minute % 60);
   }
 
+  // The minute of the day the feed's rows turn at. With no window to read, rows are taken as plain UTC days.
+  function turnMinute(json) {
+    var t = Date.parse(json && json.window && json.window.startAt);
+    if (!isFinite(t)) return 0;
+    var d = new Date(t);
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  }
+
   // Response -> the map and its three readouts, or null if it is not a usable 7-day history.
+  // The map's rows are real UTC days, each half hour on its true date, so a cell lines up with the settlements' clock.
   function readAlmanac(json) {
     var a = json && typeof json === "object" ? json.activity : null;
     if (!a || !Array.isArray(a.days) || !a.days.length || !a.summary) return null;
-    var days = a.days.slice(-7), max = 0, out = [];
-    for (var i = 0; i < days.length; i++) {
-      var d = days[i], label = dayLabel(d && d.date);
+    var turn = turnMinute(json), byDate = {}, newest = null;
+    for (var i = 0; i < a.days.length; i++) {
+      var d = a.days[i], label = dayLabel(d && d.date);
       if (!label || !Array.isArray(d.buckets) || d.buckets.length !== 48) return null;
-      var cells = d.buckets.map(function (b) {
-        // "future" has no reading yet: drawn as nothing, never as a zero
-        var work = b && b.coverage !== "future" ? intOf(b.workUnits) : null;
-        if (work !== null && work > max) max = work;
-        return work;
-      });
-      out.push({ date: d.date, label: label, cells: cells });
+      var base = Date.parse(d.date + "T00:00:00Z");
+      for (var k = 0; k < 48; k++) {
+        var date = new Date(base + (k * 30 < turn ? 86400000 : 0)).toISOString().slice(0, 10), b = d.buckets[k];
+        if (!byDate[date]) byDate[date] = new Array(48).fill(null);
+        if (!b || b.coverage === "future") continue; // no reading yet: drawn as nothing, never as a zero
+        byDate[date][k] = intOf(b.workUnits);
+        if (newest === null || date > newest) newest = date;
+      }
     }
-    out.forEach(function (d) { d.levels = d.cells.map(function (w) { return w === null ? null : level(w, max); }); });
-    var total = intOf(a.summary.observedWorkUnits), peak = intOf(a.summary.peakWindowStartMinuteUtc), active = intOf(a.summary.activeDayCount);
-    if (total === null || active === null || (peak !== null && peak >= 1440)) return null;
+    if (newest === null) newest = a.days[a.days.length - 1].date;
+    var out = [], max = 0, end = Date.parse(newest + "T00:00:00Z");
+    for (var n = 6; n >= 0; n--) {
+      var day = new Date(end - n * 86400000).toISOString().slice(0, 10);
+      if (byDate[day]) out.push({ date: day, label: dayLabel(day), cells: byDate[day] });
+    }
+    out.forEach(function (r) { r.cells.forEach(function (w) { if (w !== null && w > max) max = w; }); });
+    out.forEach(function (r) { r.levels = r.cells.map(function (w) { return w === null ? null : level(w, max); }); });
+    var active = out.filter(function (r) { return r.cells.some(function (w) { return w > 0; }); }).length;
+    var total = intOf(a.summary.observedWorkUnits), peak = intOf(a.summary.peakWindowStartMinuteUtc);
+    if (total === null || (peak !== null && peak >= 1440)) return null;
     return { days: out, max: max, total: total, peak: peak === null ? null : hhmm(peak), active: active };
   }
 
@@ -66,7 +85,7 @@
   var REFRESH_MS = 10 * 60 * 1000; // the history is daily-grained: new data is taken at most every 10 minutes
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { level: level, dayLabel: dayLabel, hhmm: hhmm, readAlmanac: readAlmanac, nowCell: nowCell, LINE_DOWN: LINE_DOWN, REFRESH_MS: REFRESH_MS };
+    module.exports = { level: level, dayLabel: dayLabel, hhmm: hhmm, readAlmanac: readAlmanac, turnMinute: turnMinute, nowCell: nowCell, LINE_DOWN: LINE_DOWN, REFRESH_MS: REFRESH_MS };
   }
   if (typeof document === "undefined") return;
 
