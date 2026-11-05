@@ -574,3 +574,7 @@ main > section, main > aside { scroll-margin-top: calc(var(--menu-h) + 16px); } 
   .alm__day { position: sticky; left: 0; z-index: 1; align-self: stretch; display: flex; align-items: center; background: var(--bg); }
   .alm__plaque { flex: 1 1 100%; }
 }
+
+/* TONIGHT: the API is up with no measurement yet. Same layout as unreachable, its own line. */
+.tonight[data-state="waiting"] .tonight__body { visibility: hidden; }
+.tonight[data-state="waiting"] .tonight__down { visibility: visible; }

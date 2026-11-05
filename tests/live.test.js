@@ -46,6 +46,27 @@ for (const bad of [null, "x", {}, { measurement: {} }, status({ anchor: { blockH
   assert.equal(keep.state, "live"); assert.equal(keep.dot, "off"); assert.equal(keep.data, r);
 }
 
+// the API answers with no measurement (recorded 2026-11-04, after the testnet redeploy): reachable, nothing to show
+{
+  const { noMeasurement, LINE_WAITING } = require("../live.js");
+  const empty = require("./fixtures/status-no-measurement-2026-11-04.json");
+  assert.equal(empty.measurement, null, "the fixture is the real empty response");
+  assert.equal(readStatus(empty), null);
+  assert.equal(noMeasurement(empty), true);
+  // not the same thing as a failure, or as a broken or partial response
+  for (const other of [null, undefined, "error code: 502", {}, status(), status({ measurement: { distanceMm: "abc" } })]) assert.equal(noMeasurement(other), false);
+  const w = view(null, null, true);
+  assert.deepEqual([w.state, w.data, w.dot, w.line], ["waiting", null, "off", LINE_WAITING]);
+  assert.notEqual(LINE_WAITING, LINE_DOWN);
+  assert.ok(!/unreachable/i.test(LINE_WAITING));
+  // an earlier reading is dropped, not kept: it belongs to the previous chain
+  const r = readStatus(status());
+  const gone = view(null, { data: r, view: view(r, null) }, true);
+  assert.deepEqual([gone.state, gone.data], ["waiting", null]);
+  // a real reading wins as soon as there is one
+  assert.equal(view(r, null, false).state, "live");
+}
+
 // formatting
 assert.equal(fmtKm(9295386), "9.30");
 assert.equal(fmtKm(0), "0.00");

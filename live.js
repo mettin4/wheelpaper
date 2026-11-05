@@ -47,6 +47,10 @@
              rpm: rpmMilli === null ? null : rpmMilli / 1000, difficulty: difficulty > 0 ? difficulty : null };
   }
 
+  // The API answered and has no wheel reading: measurement is null, as after a testnet redeploy. That is not an
+  // outage, and whatever this tab read before belongs to the previous chain.
+  function noMeasurement(json) { return !!json && typeof json === "object" && "measurement" in json && json.measurement === null; }
+
   // Lifetime distance in mm from /v1/measurement/stats, or null if the response does not carry it.
   function readStats(json) {
     var l = json && typeof json === "object" ? json.lifetime : null;
@@ -80,12 +84,15 @@
 
   var LINE_LIVE = "Live Sepolia test values from the public Squeekchain API. Everything below uses launch values from the whitepaper.";
   var LINE_DOWN = "Live feed unreachable. The whitepaper math below works without it.";
+  var LINE_WAITING = "Live feed is up, no wheel reading yet. The whitepaper math below works without it.";
   function sleepingLine(ms) { return "Squeektoshi is sleeping. Last reading " + utcHHMM(ms) + " UTC."; }
 
-  // What the strip should show, given the newest fetch result and the last good reading.
-  function view(result, last) {
+  // What the strip should show, given the newest fetch result, the last good reading and whether the API
+  // answered with no measurement. A failed fetch keeps the last reading; an answer of "nothing" does not.
+  function view(result, last, waiting) {
     if (result) return { state: result.stale ? "sleeping" : "live", data: result, dot: result.stale ? "off" : "on",
                          line: result.stale ? sleepingLine(result.observedAt) : LINE_LIVE };
+    if (waiting) return { state: "waiting", data: null, dot: "off", line: LINE_WAITING };
     if (last) return { state: last.view.state, data: last.data, dot: "off", line: last.view.line };
     return { state: "unreachable", data: null, dot: "off", line: LINE_DOWN };
   }
@@ -93,9 +100,9 @@
   if (typeof module !== "undefined" && module.exports) {
     module.exports = { readStatus: readStatus, readStats: readStats, withDistance: withDistance,
                        LABEL_LIFETIME: LABEL_LIFETIME, LABEL_TODAY: LABEL_TODAY, STATS_API: STATS_API,
-                       view: view, fmtKm: fmtKm, utcHHMM: utcHHMM, API: API,
+                       view: view, noMeasurement: noMeasurement, fmtKm: fmtKm, utcHHMM: utcHHMM, API: API,
                        wheelDuration: wheelDuration, wheelPlan: wheelPlan,
-                       LINE_LIVE: LINE_LIVE, LINE_DOWN: LINE_DOWN, sleepingLine: sleepingLine };
+                       LINE_LIVE: LINE_LIVE, LINE_DOWN: LINE_DOWN, LINE_WAITING: LINE_WAITING, sleepingLine: sleepingLine };
   }
   if (typeof document === "undefined") return;
 
@@ -167,7 +174,7 @@
       el.kmLabel.textContent = v.data.distanceLabel;
     }
     el.line.textContent = v.line;
-    el.down.textContent = LINE_DOWN;
+    el.down.textContent = v.data ? LINE_DOWN : v.line;
   }
 
   // One GET with its own timeout; resolves to parsed JSON or null, never rejects.
@@ -182,12 +189,13 @@
       .then(function (res) { clearTimeout(killer); return res; }, function () { clearTimeout(killer); return null; });
   }
 
-  // Both calls run in parallel each cycle; the status call alone decides live / sleeping / unreachable.
+  // Both calls run in parallel each cycle; the status call alone decides live / sleeping / waiting / unreachable.
   // A page without the strip (the widget) has no distance to show, so it skips the stats call.
-  var cycleStats = null;
+  var cycleStats = null, cycleWaiting = false;
   function fetchStatus() {
     return Promise.all([getJson(API), strip ? getJson(STATS_API) : null]).then(function (r) {
       cycleStats = r[1] && typeof r[1] === "object" ? r[1] : null;
+      cycleWaiting = noMeasurement(r[0]);
       var lifetime = null;
       try { lifetime = readStats(r[1]); } catch (e) { lifetime = null; }
       return withDistance(readStatus(r[0]), lifetime);
@@ -199,10 +207,12 @@
     if (document.hidden || inFlight) return;
     inFlight = true;
     lastAttempt = Date.now();
+    cycleWaiting = false;
     var done = function (result) {
       inFlight = false;
-      var v = view(result, last);
+      var v = view(result, last, cycleWaiting);
       if (result) last = { data: result, view: v };
+      else if (cycleWaiting) last = null;
       publish(v);
       schedule(REFRESH_MS);
     };
