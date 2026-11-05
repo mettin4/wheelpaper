@@ -28,8 +28,26 @@
   --t-base: 200ms;
   --ease: ease-out;
 
-  --font-head: "Barlow Condensed", "Arial Narrow", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-head: "Barlow Condensed", "Barlow Condensed Fallback", "Arial Narrow", sans-serif;
+  --font-mono: "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, monospace;
+}
+
+/* Fallback faces cut to the web fonts' measurements, so the swap keeps every line break and baseline. size-adjust matches
+   the width of this page's own text; the overrides are the web font's ascent and descent divided by that size-adjust. */
+@font-face {
+  font-family: "Barlow Condensed Fallback"; font-weight: 600 700;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Helvetica Bold"), local("Roboto Bold");
+  size-adjust: 67.1%; ascent-override: 149.03%; descent-override: 29.81%; line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Barlow Condensed Fallback"; font-weight: 300 500;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Helvetica"), local("Roboto");
+  size-adjust: 74.2%; ascent-override: 134.77%; descent-override: 26.95%; line-gap-override: 0%;
+}
+@font-face {
+  font-family: "IBM Plex Mono Fallback"; font-weight: 400;
+  src: local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("Menlo"), local("Roboto Mono");
+  ascent-override: 102.5%; descent-override: 27.5%; line-gap-override: 0%;
 }
 
 @media (max-width: 720px) {
@@ -88,11 +106,11 @@ body {
 .chart canvas, .clock__track { pointer-events: none; }
 
 /* 1. wheel */
-.s-wheel { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; position: relative; padding: var(--s8) 0 var(--s12); }
+.s-wheel { display: flex; flex-direction: column; justify-content: center; position: relative; padding: var(--s8) 0 var(--s12); }
 .s-wheel__grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--s6); align-items: center; width: 100%; }
 /* both columns share one height: title top meets the wheel heading, the small line sits on the counter label's line */
 .s-wheel__grid { align-items: stretch; }
-.s-wheel__copy { display: flex; flex-direction: column; }
+.s-wheel__copy { display: grid; grid-template-rows: auto auto 1fr minmax(49.6px, auto); } /* the last row holds the notes, so the body centres the same with or without them */
 .s-wheel__copy .body { margin: auto 0; }
 .s-wheel__notes { display: grid; gap: var(--s1); }
 .s-wheel__fig { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--s3); }
@@ -106,7 +124,7 @@ body {
 .wheel .magnet { fill: var(--blue); }
 .wheel__sensor .px { fill: var(--muted); transition: fill var(--t-fast) var(--ease); }
 .wheel__sensor.is-hit .px { fill: var(--green); }
-.counter { display: flex; flex-direction: column; align-items: center; gap: var(--s1); }
+.counter { align-self: stretch; display: flex; flex-direction: column; align-items: center; gap: var(--s1); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .scroll-hint {
   position: absolute; left: 0; right: 0; bottom: var(--s3); margin: 0;
@@ -319,17 +337,17 @@ body {
 
 @media (max-width: 720px) {
   /* first viewport at 375px: title, subtitle, wheel heading, wheel and counter; body copy follows */
-  .s-wheel__grid { grid-template-columns: 1fr; gap: 0; }
+  .s-wheel__grid { --wheel-h: clamp(150px, calc(100svh - 440px), 320px); grid-template-columns: 1fr; gap: 0; grid-template-rows: auto auto minmax(calc(var(--hero-fig) + var(--wheel-h)), auto) auto auto; }
   .s-wheel__copy { display: contents; }
-  .s-wheel__grid .title { order: 1; }
-  .s-wheel__grid .subtitle { order: 2; font-size: var(--fs-24); margin: var(--s1) 0 var(--s3); }
-  .s-wheel__fig { order: 3; gap: var(--s1); margin-bottom: var(--s4); }
-  .s-wheel__grid .body { order: 4; }
-  .s-wheel__notes { order: 5; }
+  .s-wheel__grid .title { grid-row: 1; }
+  .s-wheel__grid .subtitle { grid-row: 2; font-size: var(--fs-24); margin: var(--s1) 0 var(--s3); }
+  .s-wheel__fig { grid-row: 3; gap: var(--s1); margin-bottom: var(--s4); }
+  .s-wheel__grid .body { grid-row: 4; }
+  .s-wheel__notes { grid-row: 5; }
   .s-wheel__copy .body { margin: 0 0 var(--s3); }
   .s-wheel { padding-top: var(--s4); }
   .s-wheel__h2 { text-align: left; }
-  .wheel { width: auto; max-width: 100%; height: clamp(150px, calc(100svh - 440px), 320px); }
+  .wheel { width: auto; max-width: 100%; height: var(--wheel-h); }
   .clocks { grid-template-columns: 1fr; gap: var(--s2); }
   .control__label { font-size: var(--fs-24); }
   .control__label.control__label--small { font-size: var(--fs-13); }
@@ -358,8 +376,8 @@ body {
 }
 
 /* TONIGHT strip: live Sepolia values. Fixed height in every state, so data arriving never moves the page (tablets: see THE COVER). */
+.cover { --tn-h: 144px; }
 .tonight {
-  --tn-h: 144px;
   height: var(--tn-h); overflow: hidden;
   background: var(--surface);
   border-top: 1px solid var(--gold-2); border-bottom: 1px solid var(--gold-2);
@@ -392,7 +410,7 @@ body {
 .tonight[data-state="unreachable"] .tonight__down { visibility: visible; }
 
 @media (max-width: 720px) {
-  .tonight { --tn-h: 344px; }
+  .cover { --tn-h: 344px; }
   .tonight__row { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--s2); }
   .tonight__readouts { flex-direction: column; gap: var(--s2); }
 }
@@ -714,18 +732,29 @@ main > section, main > aside { scroll-margin-top: calc(var(--menu-h) + 16px); } 
    Hero and TONIGHT strip together are exactly one screen: the strip keeps its height, the hero takes the rest, and the
    fold lands on the strip's bottom edge. The wheel gives way to the viewport's height, as it already does on phones:
    449px is the strip plus the hero's padding, the rest of its figure and 1px for rounding. 80px below keeps the content clear of the
-   scroll hint. On a phone the hero's content is taller than the screen, so there the cover simply runs longer. */
-.cover { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; }
-.cover > .tonight { flex: none; }
+   scroll hint. On a phone the hero's content is taller than the screen, so there the cover simply runs longer.
+   The browser can paint before the parser reaches the end of the hero, so every height is reserved here, in a stylesheet
+   that blocks that paint, not left to content that may not exist yet: the strip's row stays open with no strip in it, and
+   the grid holds its figure's height with no figure in it. --hero-fig is that figure without its wheel: the heading,
+   the counter (56 + 8 + 20.8 + 8 + 20.8), and 48px of gaps: the two 24px gaps here, on a phone two 8px gaps and 32px below. */
+.cover { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr minmax(var(--tn-h), auto); min-height: 100vh; min-height: 100svh; }
+.s-wheel__grid { --hero-fig: 184.4px; }
 @media (min-width: 721px) {
-  .s-wheel { padding: var(--s5) 0 80px; }
-  .s-wheel__fig .wheel { max-width: clamp(220px, calc((100svh - 449px) * 400 / 440), 400px); }
+  .s-wheel { padding: var(--s5) 0 80px; container-type: inline-size; }
+  .s-wheel__grid {
+    --wheel-max: clamp(220px, calc((100svh - 449px) * 400 / 440), 400px);
+    --hero-w: min(100cqw - 2 * var(--gutter), var(--max));
+    --hero-col: min((var(--hero-w) - var(--s6)) / 2.1, var(--hero-w) - var(--s6) - 427.5px); /* 427.5px: the title's longest word, the left column's floor */
+    min-height: calc(var(--hero-fig) + min(var(--hero-col), var(--wheel-max)) * 1.1);
+  }
+  .s-wheel__fig .wheel { max-width: var(--wheel-max); }
 }
 
 /* TONIGHT on tablets: the readouts wrap to two rows and the line to two, so the strip grows with them. The floor is
    that wrapped height, so data arriving still never moves the page. 1440 and 375 keep their fixed heights. */
 @media (min-width: 721px) and (max-width: 860px) {
-  .tonight { --tn-h: 198px; height: auto; min-height: var(--tn-h); }
+  .cover { --tn-h: 198px; }
+  .tonight { height: auto; min-height: var(--tn-h); }
   .tonight__row { height: auto; min-height: calc(var(--tn-h) - 2px); padding-top: var(--s2); padding-bottom: var(--s2); }
 }
 

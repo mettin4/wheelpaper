@@ -68,10 +68,17 @@ for (const r of css.match(/^\s*\.s-(clocks|diff|money|squeeks|proof|almanac|widg
 assert.ok(!/\.s-[a-z]+ \.h2 \{[^}]*margin-bottom/.test(css), "no section sets its own heading gap");
 
 // the first screen, and the strip's reserved height at both ends
-assert.match(css, /\.cover \{ display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; \}/);
-assert.match(css, /\.s-wheel \{ flex: 1 0 auto;/);
+// the first paint may come before the parser finishes the hero: the cover's rows and the grid hold the final height
+assert.match(css, /\.cover \{ display: grid; grid-template-columns: minmax\(0, 1fr\); grid-template-rows: 1fr minmax\(var\(--tn-h\), auto\); min-height: 100vh; min-height: 100svh; \}/);
+assert.match(css, /min-height: calc\(var\(--hero-fig\) \+ min\(var\(--hero-col\), var\(--wheel-max\)\) \* 1\.1\);/);
+assert.match(css, /\.counter \{ align-self: stretch;/);
+assert.match(css, /grid-template-rows: auto auto 1fr minmax\(49\.6px, auto\);/);
+assert.match(css, /grid-template-rows: auto auto minmax\(calc\(var\(--hero-fig\) \+ var\(--wheel-h\)\), auto\) auto auto;/);
+assert.match(css, /--font-head: "Barlow Condensed", "Barlow Condensed Fallback",/);
+assert.match(css, /--font-mono: "IBM Plex Mono", "IBM Plex Mono Fallback",/);
+assert.ok(!/\.s-wheel \{ flex:/.test(css), "the cover's rows set the hero's height, not flex");
 assert.match(html, /<div class="cover">\s+<section class="s-wheel" id="wheel"/);
-assert.match(css, /\.tonight \{\s+--tn-h: 144px;/);
-assert.match(css, /\.tonight \{ --tn-h: 344px; \}/);
+assert.match(css, /\.cover \{ --tn-h: 144px; \}/);
+assert.match(css, /\.cover \{ --tn-h: 344px; \}/);
 
 console.log("cover.test.js: all assertions passed");
